@@ -33,7 +33,7 @@ router.get("/wss", (ctx) => {
         let data = JSON.parse(raw.data);
         console.log("Request: ", data);
         console.log("Servers: ", servers);
-        console.log("Connections: ", connections);
+        console.log("Connections: ", Object.keys(connections));
         if (data.type == "server") {
             servers[id] = [];
         } else if (data.type == "subscribe" && servers[data.id]) {
@@ -52,8 +52,8 @@ router.get("/wss", (ctx) => {
         }
     };
     ws.onclose = () => {
-        delete connections[id];
-        delete servers[id];
+        // delete connections[id];
+        // delete servers[id];
         console.log("Closed");
         // ws.send(JSON.stringify({ type: "close", id }));
     };
@@ -65,6 +65,7 @@ app.use(router.allowedMethods());
 // Serve static files
 app.use(async (ctx) => {
     const path = ctx.request.url.pathname;
+    console.log(path);
     if (path != "/wss") {
         const file_path = `${srcDir}${path}`;
         try {
@@ -87,4 +88,4 @@ app.use(async (ctx) => {
     }
 });
 
-await app.listen({ port: 2134 });
+await app.listen({ port: 8080 });
