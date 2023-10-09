@@ -36,7 +36,7 @@ ws.on("open", () => {
 
 ws.on("message", async (raw) => {
     let data = JSON.parse(raw.data);
-
+    console.log(data);
     if (data.type == "new") {
         console.log("new session");
         let id = sessions.length;
