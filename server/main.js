@@ -72,6 +72,7 @@ ws.on("message", async (raw) => {
 ws.on("error", console.error);
 
 ws.on("close", () => {
+    console.log("Closed");
     sessions = [];
 });
 
