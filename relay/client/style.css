@@ -1,0 +1,57 @@
+div#view {
+    width: 50%;
+    min-width: fit-content;
+    background: #2c283e;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+body {
+    background: #13111c;
+}
+
+div#tabs {
+    display: flex;
+}
+
+.tab {
+    min-width: 50px;
+    height: 30px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #767676;
+    font-family: sans-serif;
+    background: #09080d;
+    text-align: center;
+    padding: 4px;
+    padding-left: 10px;
+    padding-right: 10px;
+    line-height: 30px;
+    cursor: pointer;
+    margin-right: 10px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+.tab.new {
+    color: #727c85;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+div#terms > div {
+    padding: 10px 0 0 10px;
+    background: #000;
+}
+
+.active {
+    color: aliceblue;
+}
+
+#canvasCont {
+    background: #2d283e;
+    height: 400px;
+    margin-top: 10px;
+    padding: 16px;
+    border-radius: 10px;
+}
