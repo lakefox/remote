@@ -18,7 +18,6 @@ ws.on("open", () => {
     // Send system information to the client every second
     setInterval(() => {
         const cpuUsage = Deno.loadavg();
-        console.log(Deno.systemMemoryInfo());
         const systemInfo = {
             cpuUsage: cpuUsage[0],
             memoryUsage: (1 - os.freemem() / os.totalmem()) * 100,
@@ -77,7 +76,6 @@ ws.on("close", () => {
 });
 
 function send(data, id = undefined) {
-    console.log(data);
     ws.send(
         JSON.stringify({
             data,
@@ -90,7 +88,7 @@ function send(data, id = undefined) {
 async function createSession(id) {
     let shell;
     let env = Env(Deno.env.toObject());
-    console.log(env);
+
     switch (os.platform()) {
         case "win32":
             shell = "powershell.exe";
