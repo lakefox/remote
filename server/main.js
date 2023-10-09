@@ -2,7 +2,7 @@ import { StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.4/mo
 import os from "https://deno.land/std@0.123.0/node/os.ts";
 import { Pty } from "https://deno.land/x/deno_pty_ffi/mod.ts";
 
-const ws = new StandardWebSocketClient("wss://sour-coyote-35.deno.dev/wss");
+const ws = new StandardWebSocketClient("wss://ws.lakefox.net/wss");
 
 console.log("Socket is up and running...");
 

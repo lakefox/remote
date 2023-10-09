@@ -38,7 +38,7 @@ const systemChart = new Chart(ctx, {
 
 let terminals = [];
 
-const socket = new WebSocket(`wss://${window.location.host}/wss`);
+const socket = new WebSocket(`wss://ws.lakefox.net/wss`);
 let manager = new Term(socket);
 // manager.connect(123)
 // then let t = new manager.Terminal(el);
