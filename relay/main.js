@@ -41,21 +41,33 @@ router.get("/wss", (ctx) => {
             connections[data.id].send(JSON.stringify({ type: "connect", id }));
         } else if (data.type == "emit") {
             if (data.id) {
-                connections[data.id].send(JSON.stringify(data.data));
-                console.log("Sent Direct: ", data.id);
+                try {
+                    connections[data.id].send(JSON.stringify(data.data));
+                    console.log("Sent Direct: ", data.id);
+                } catch (error) {
+                    console.log("User Disconnected, removing: ", data.id);
+                    delete connections[data.id];
+                }
             } else {
-                servers[id].forEach((connection) => {
-                    connections[connection].send(JSON.stringify(data.data));
-                    console.log("Sent Mass: ", connection);
+                servers[id].forEach((connection, i) => {
+                    try {
+                        connections[connection].send(JSON.stringify(data.data));
+                        console.log("Sent Mass: ", connection);
+                    } catch (error) {
+                        console.log("User Disconnected, removing: ", data.id);
+                        delete connections[data.id];
+                        console.log("Updating Connections");
+                        servers[id][i] = undefined;
+                    }
                 });
+                servers[id] = servers[id].filter((e) => e);
             }
         }
     };
     ws.onclose = () => {
-        // delete connections[id];
-        // delete servers[id];
+        delete connections[id];
+        delete servers[id];
         console.log("Closed");
-        // ws.send(JSON.stringify({ type: "close", id }));
     };
 });
 
