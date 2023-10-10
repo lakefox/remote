@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Desktop-like Window System</title>
+        <style>
+            .window {
+                position: absolute;
+                border: 1px solid #000;
+                background-color: #fff;
+            }
+            .resize-handle {
+                position: absolute;
+                background: gray;
+                cursor: se-resize;
+            }
+            .titleBar {
+                background: #000;
+                color: #fff;
+            }
+            .closeButton {
+                float: right;
+                border: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div
+            id="desktop"
+            style="position: relative; width: 800px; height: 600px"
+        ></div>
+        <button id="open-button">Open Window</button>
+        <script src="./Desktop.js"></script>
+        <script>
+            const desktop = document.getElementById("desktop");
+            const windows = [];
+
+            function openWindow() {
+                const win = new DesktopWindow(
+                    desktop,
+                    "Window " + (windows.length + 1),
+                    100 + windows.length * 20,
+                    100 + windows.length * 20,
+                    300,
+                    200
+                );
+                win.add("Hi");
+                win.on("close", () => {
+                    // onClose callback
+                    const index = windows.indexOf(window);
+                    if (index !== -1) {
+                        windows.splice(index, 1);
+                    }
+                    console.log("closed");
+                });
+                win.on("resize", (width, height) => {
+                    // onResize callback
+                    console.log(
+                        `Window resized to width: ${width}, height: ${height}`
+                    );
+                });
+                windows.push(win);
+            }
+
+            document
+                .getElementById("open-button")
+                .addEventListener("click", openWindow);
+        </script>
+    </body>
+</html>
