@@ -1,4 +1,4 @@
-div#view {
+.view {
     width: 50%;
     min-width: fit-content;
     background: #2c283e;
@@ -54,4 +54,17 @@ div#terms > div {
     margin-top: 10px;
     padding: 16px;
     border-radius: 10px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+}
+.view:nth-child(1) {
+    margin-right: 5px;
+    width: 65%;
+}
+.view:nth-child(2) {
+    width: 35%;
+    margin-left: 5px;
 }
