@@ -6,7 +6,7 @@ class DesktopWindow {
             }
         }
     }
-    constructor(container, title, x, y, width, height) {
+    constructor(container, title, x, y) {
         this.container = container;
         this.events = {};
 
@@ -14,8 +14,6 @@ class DesktopWindow {
         this.window.className = "window";
         this.window.style.left = x + "px";
         this.window.style.top = y + "px";
-        this.window.style.width = width + "px";
-        this.window.style.height = height + "px";
 
         const titleBar = document.createElement("div");
         titleBar.style.cursor = "move";
@@ -40,7 +38,6 @@ class DesktopWindow {
         const content = document.createElement("div");
         content.className = "content";
         content.style.width = "100%";
-        content.style.height = "calc(100% - 20px)";
         this.content = content;
 
         this.window.appendChild(titleBar);
@@ -49,10 +46,6 @@ class DesktopWindow {
         this.window.appendChild(content);
 
         container.appendChild(this.window);
-    }
-
-    add(content) {
-        this.content.innerHTML = content;
     }
 
     startDrag(e) {

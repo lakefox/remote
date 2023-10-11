@@ -1,51 +1,6 @@
-.view {
-    width: 50%;
-    min-width: fit-content;
-    background: #2c283e;
-    padding: 20px;
-    border-radius: 8px;
-}
-
 body {
     background: #13111c;
-}
-
-div#tabs {
-    display: flex;
-}
-
-.tab {
-    min-width: 50px;
-    height: 30px;
-    font-size: 20px;
-    font-weight: 600;
-    color: #767676;
-    font-family: sans-serif;
-    background: #09080d;
-    text-align: center;
-    padding: 4px;
-    padding-left: 10px;
-    padding-right: 10px;
-    line-height: 30px;
-    cursor: pointer;
-    margin-right: 10px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-}
-
-.tab.new {
-    color: #727c85;
-    padding-left: 4px;
-    padding-right: 4px;
-}
-
-div#terms > div {
-    padding: 10px 0 0 10px;
-    background: #000;
-}
-
-.active {
-    color: aliceblue;
+    background-image: url(https://railway.app/illustrations/grid--dark.svg);
 }
 
 #canvasCont {
@@ -56,15 +11,57 @@ div#terms > div {
     border-radius: 10px;
 }
 
-.row {
-    display: flex;
-    justify-content: space-between;
+.window {
+    position: absolute;
+    border: 1px solid #000;
+    border-top: none;
+    background-color: #fff;
+    min-width: fit-content;
 }
-.view:nth-child(1) {
-    margin-right: 5px;
-    width: 65%;
+.titleBar {
+    background: #33323e;
+    color: #fff;
+    font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+        "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+    font-weight: 300;
+    font-size: 17px;
+    height: 20px;
+    padding: 3px 0 0 10px;
+    z-index: 2;
 }
-.view:nth-child(2) {
-    width: 35%;
-    margin-left: 5px;
+.resize-handle {
+    position: absolute;
+    background: gray;
+    cursor: se-resize;
+    z-index: 100;
+}
+.closeButton {
+    float: right;
+    border: none;
+    background: #808080;
+    color: antiquewhite;
+    height: 22px;
+    margin-top: -2px;
+}
+
+#new {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 50px;
+    height: 50px;
+}
+
+#new {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 75px;
+    height: 75px;
+    background: #33323e;
+    border: none;
+    border-top-left-radius: 10px;
+    font-size: 63px;
+    color: antiquewhite;
+    cursor: pointer;
 }
