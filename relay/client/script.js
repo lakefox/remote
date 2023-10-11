@@ -75,7 +75,12 @@ document.querySelector("#new").addEventListener("click", () => {
 
 function newTerm() {
     let main = document.querySelector("#main");
-    let app = new DesktopWindow(main, `Terminal ${terminals.length}`, 100, 100);
+    let app = new DesktopWindow(
+        main,
+        `Terminal ${terminals.length}`,
+        100 + windows.length * 20,
+        100 + windows.length * 20
+    );
     app.on("close", () => {
         const index = windows.indexOf(app);
         if (index !== -1) {
