@@ -45,8 +45,8 @@ let manager = new Term(socket);
 // then let t = new manager.Terminal(el);
 //  manager.run()
 manager.on("open", () => {
-    // let id = parseInt(prompt("enter id"));
-    // manager.connect(id);
+    let id = parseInt(prompt("enter id"));
+    manager.connect(id);
     desktop.new();
 });
 
