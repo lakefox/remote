@@ -9,11 +9,17 @@ class DesktopWindow {
     constructor(container, title, x, y) {
         this.container = container;
         this.events = {};
+        this.title = title;
 
         this.window = document.createElement("div");
         this.window.className = "window";
         this.window.style.left = x + "px";
         this.window.style.top = y + "px";
+        this.window.addEventListener("click", (e) => {
+            this.#call("click", e);
+        });
+
+        this.style = this.window.style;
 
         const titleBar = document.createElement("div");
         titleBar.style.cursor = "move";
@@ -25,6 +31,14 @@ class DesktopWindow {
         closeButton.textContent = "X";
         closeButton.className = "closeButton";
         closeButton.addEventListener("click", this.close.bind(this));
+
+        const minimise = document.createElement("button");
+        minimise.textContent = "_";
+        minimise.className = "minimise";
+        minimise.addEventListener("click", (e) => {
+            this.window.style.display = "none";
+            this.#call("minimise", e);
+        });
 
         const resizeHandle = document.createElement("div");
         resizeHandle.className = "resize-handle";
@@ -42,6 +56,7 @@ class DesktopWindow {
 
         this.window.appendChild(titleBar);
         titleBar.appendChild(closeButton);
+        titleBar.appendChild(minimise);
         this.window.appendChild(resizeHandle);
         this.window.appendChild(content);
 
@@ -52,13 +67,8 @@ class DesktopWindow {
         let offsetX, offsetY;
         e.preventDefault();
         document.onmousemove = (e) => {
-            if (
-                e.target === this.window ||
-                e.target === this.window.querySelector("div")
-            ) {
-                this.window.style.left = e.clientX - offsetX + "px";
-                this.window.style.top = e.clientY - offsetY + "px";
-            }
+            this.window.style.left = e.clientX - offsetX + "px";
+            this.window.style.top = e.clientY - offsetY + "px";
         };
         document.onmouseup = () => {
             document.onmousemove = null;
@@ -91,6 +101,10 @@ class DesktopWindow {
     close() {
         this.container.removeChild(this.window);
         this.#call("close");
+    }
+
+    open() {
+        this.window.style.display = "block";
     }
 
     on(event, cb) {

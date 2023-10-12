@@ -1,6 +1,8 @@
 body {
     background: #13111c;
     background-image: url(https://railway.app/illustrations/grid--dark.svg);
+    margin: 0;
+    padding: 0;
 }
 
 #canvasCont {
@@ -13,21 +15,22 @@ body {
 
 .window {
     position: absolute;
-    border: 1px solid #000;
+    border: 1px solid #13111c;
     border-top: none;
     background-color: #fff;
     min-width: fit-content;
+    z-index: 1;
 }
 .titleBar {
     background: #33323e;
     color: #fff;
-    font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-        "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+        "Lucida Sans", Arial, sans-serif;
     font-weight: 300;
     font-size: 17px;
     height: 20px;
     padding: 3px 0 0 10px;
-    z-index: 2;
+    z-index: 3;
 }
 .resize-handle {
     position: absolute;
@@ -42,6 +45,16 @@ body {
     color: antiquewhite;
     height: 22px;
     margin-top: -2px;
+    cursor: pointer;
+}
+.minimise {
+    float: right;
+    border: none;
+    background: #808080;
+    color: antiquewhite;
+    height: 22px;
+    margin-top: -2px;
+    cursor: pointer;
 }
 
 #new {
@@ -63,5 +76,32 @@ body {
     border-top-left-radius: 10px;
     font-size: 63px;
     color: antiquewhite;
+    cursor: pointer;
+}
+
+#tabs {
+    /* position: absolute; */
+    /* bottom: 0; */
+    height: 30px;
+    width: 100%;
+    background: #33323e;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.tab {
+    width: auto;
+    height: 30px;
+    background: #23222e;
+    margin-right: 3px;
+    line-height: 30px;
+    text-align: center;
+    font-size: 17px;
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+        "Lucida Sans", Arial, sans-serif;
+    padding: 0 10px;
+    color: #b9b9b9;
+    font-weight: 700;
     cursor: pointer;
 }
