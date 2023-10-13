@@ -92,9 +92,6 @@ function Term(socket) {
                         term.write(e);
                     }
             }
-            lastLineLength = [...el.querySelectorAll('[role="listitem"]')]
-                .filter((e) => e.innerHTML != "&nbsp;")
-                .at(-1).innerHTML.length;
         });
         function clearInput(command) {
             var inputLengh = command.length;
@@ -126,6 +123,9 @@ function Term(socket) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
                 term.write(data.data);
+                lastLineLength = [...el.querySelectorAll('[role="listitem"]')]
+                    .filter((e) => e.innerHTML != "&nbsp;")
+                    .at(-1).innerHTML.length;
             } else {
                 emit(data.type, data.data);
             }
