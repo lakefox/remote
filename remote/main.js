@@ -48,7 +48,7 @@ ws.on("message", async (raw) => {
         send({ type: "id", data: id });
     } else if (data.type == "command") {
         console.log("COMMAND: ", data.data);
-        await sessions[data.id].write(data.data);
+        await sessions[data.id].write(data.data + "; echo");
     } else if (data.type == "connect") {
         console.log("connect");
         for (let i = 0; i < stats.length; i++) {
