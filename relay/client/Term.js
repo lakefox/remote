@@ -56,6 +56,9 @@ function Term(socket) {
         };
         term.onData((e) => {
             console.log(lastLineLength);
+            if (lastLineLength == 0) {
+                lastLineLength = getLastLineLength(el);
+            }
             switch (e) {
                 case "\u0003": // Ctrl+C
                     term.write("^C");
