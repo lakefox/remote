@@ -56,6 +56,9 @@ function Term(socket) {
                 id,
                 data: e,
             });
+            if (e == " ") {
+                term.write(" ");
+            }
         });
         function send(data) {
             socket.send(JSON.stringify({ type: "emit", id: connectId, data }));
