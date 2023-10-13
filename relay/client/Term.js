@@ -123,6 +123,7 @@ function Term(socket) {
             if (data.type == "id" && id == null) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
+                console.log(data.data);
                 term.write(data.data);
             } else {
                 emit(data.type, data.data);
