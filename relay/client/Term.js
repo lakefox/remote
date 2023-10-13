@@ -19,10 +19,8 @@ function Term(socket) {
 
     this.Terminal = function (el) {
         let id = null;
-        let lastLineLength = 0;
         let term = new window.Terminal({
             cursorBlink: true,
-            cursorStyle: "underline",
             convertEol: true,
             screenReaderMode: true,
             scrollback: 1000,
@@ -45,8 +43,6 @@ function Term(socket) {
 
         // Observe changes to the terminal container's size
         resizeObserver.observe(el);
-
-        let command = "";
 
         send({ type: "new" });
 
