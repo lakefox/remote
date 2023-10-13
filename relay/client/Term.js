@@ -21,6 +21,10 @@ function Term(socket) {
         let id = null;
         let term = new window.Terminal({
             cursorBlink: true,
+            cursorStyle: "underline",
+            convertEol: true,
+            screenReaderMode: true,
+            scrollback: 1000,
         });
         let fitAddon = new FitAddon.FitAddon();
         term.loadAddon(fitAddon);
