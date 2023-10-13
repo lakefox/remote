@@ -89,11 +89,6 @@ function Term(socket) {
             }
         });
 
-        term.on("paste", function (data) {
-            command += data;
-            term.write(data);
-        });
-
         function clearInput(command) {
             var inputLengh = command.length;
             for (var i = 0; i < inputLengh; i++) {
