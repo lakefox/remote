@@ -33,7 +33,6 @@ function Term(socket) {
             for (const entry of entries) {
                 if (entry.target === el) {
                     // The terminal container has been resized
-                    console.log("resize");
                     fitAddon.fit();
                 }
             }

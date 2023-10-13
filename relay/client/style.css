@@ -18,8 +18,10 @@ body {
     border: 1px solid #13111c;
     border-top: none;
     background-color: #fff;
-    min-width: fit-content;
+    min-width: 700px;
+    min-height: 300px;
     z-index: 1;
+    overflow-y: clip;
 }
 .titleBar {
     background: #33323e;

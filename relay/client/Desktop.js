@@ -55,6 +55,8 @@ class DesktopWindow {
         content.style.height = "100%";
         this.content = content;
 
+        // add resize observer to adjust to content size also add more addons and make nano work
+
         this.window.appendChild(titleBar);
         titleBar.appendChild(closeButton);
         titleBar.appendChild(minimise);
