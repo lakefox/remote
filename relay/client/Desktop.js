@@ -52,6 +52,7 @@ class DesktopWindow {
         const content = document.createElement("div");
         content.className = "content";
         content.style.width = "100%";
+        content.style.height = "100%";
         this.content = content;
 
         this.window.appendChild(titleBar);

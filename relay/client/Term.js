@@ -22,9 +22,25 @@ function Term(socket) {
         let term = new window.Terminal({
             cursorBlink: true,
         });
-        const fitAddon = new FitAddon.FitAddon();
+        let fitAddon = new FitAddon.FitAddon();
         term.loadAddon(fitAddon);
         term.open(el);
+
+        // fitAddon.fit();
+
+        // Initialize the ResizeObserver
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.target === el) {
+                    // The terminal container has been resized
+                    console.log("resize");
+                    fitAddon.fit();
+                }
+            }
+        });
+
+        // Observe changes to the terminal container's size
+        resizeObserver.observe(el);
 
         let command = "";
 
@@ -117,6 +133,16 @@ function Term(socket) {
                 events[event][i](...args);
             }
         }
+    }
+    function fitTerminal(term, cont) {
+        const rect = cont.getBoundingClientRect();
+        const cols = Math.floor(
+            rect.width / term._core._renderService.dimensions.actualCellWidth
+        );
+        const rows = Math.floor(
+            rect.height / term._core._renderService.dimensions.actualCellHeight
+        );
+        term.resize(cols, rows);
     }
 }
 
