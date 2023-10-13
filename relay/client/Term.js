@@ -19,6 +19,7 @@ function Term(socket) {
 
     this.Terminal = function (el) {
         let id = null;
+        let lastLineLength = 0;
         let term = new window.Terminal({
             cursorBlink: true,
             cursorStyle: "underline",
@@ -71,7 +72,7 @@ function Term(socket) {
                     break;
                 case "\u007F": // Backspace (DEL)
                     // Do not delete the prompt
-                    if (term._core.buffer.x > 2) {
+                    if (term._core.buffer.x > lastLineLength) {
                         term.write("\b \b");
                         if (command.length > 0) {
                             command = command.substring(0, command.length - 1);
@@ -91,10 +92,12 @@ function Term(socket) {
                         term.write(e);
                     }
             }
+            lastLineLength = [...el.querySelectorAll('[role="listitem"]')]
+                .filter((e) => e.innerHTML != "&nbsp;")
+                .at(-1).innerHTML.length;
         });
         function clearInput(command) {
             var inputLengh = command.length;
-            console.log(term);
             for (var i = 0; i < inputLengh; i++) {
                 term.write("\b \b");
             }
@@ -122,7 +125,6 @@ function Term(socket) {
             if (data.type == "id" && id == null) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
-                console.log(data.data);
                 term.write(data.data);
             } else {
                 emit(data.type, data.data);
