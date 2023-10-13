@@ -52,8 +52,9 @@ function Term(socket) {
 
         term.prompt = () => {
             console.log("promt");
-            term.write("\r\n$ ");
+            // term.write("\r\n$ ");
         };
+
         term.onData((e) => {
             console.log(lastLineLength);
             if (lastLineLength == 0) {
@@ -67,6 +68,8 @@ function Term(socket) {
                 case "\r": // Enter
                     runCommand(command);
                     command = "";
+                    prompt(term);
+
                     break;
                 case "\u007F": // Backspace (DEL)
                     // Do not delete the prompt
@@ -81,16 +84,16 @@ function Term(socket) {
                     console.log("tabbed", output, ["dd", "ls"]);
                     break;
                 default:
-                    if (
-                        (e >= String.fromCharCode(0x20) &&
-                            e <= String.fromCharCode(0x7e)) ||
-                        e >= "\u00a0"
-                    ) {
-                        command += e;
-                        term.write(e);
-                    }
+                    command += e;
+                    term.write(e);
             }
         });
+
+        term.on("paste", function (data) {
+            command += data;
+            term.write(data);
+        });
+
         function clearInput(command) {
             var inputLengh = command.length;
             for (var i = 0; i < inputLengh; i++) {
@@ -99,6 +102,7 @@ function Term(socket) {
         }
         function prompt(term) {
             command = "";
+            term.prompt();
         }
 
         function runCommand(command) {
@@ -120,7 +124,7 @@ function Term(socket) {
             if (data.type == "id" && id == null) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
-                term.write(data.data);
+                term.write("\r\n" + data.data);
                 lastLineLength = getLastLineLength(el);
             } else {
                 emit(data.type, data.data);
