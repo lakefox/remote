@@ -107,7 +107,7 @@ function Term(socket) {
                 send({
                     type: "command",
                     id,
-                    data: command + "\n\r",
+                    data: command + "\n",
                 });
             }
         }
