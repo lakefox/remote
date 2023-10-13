@@ -56,37 +56,38 @@ function Term(socket) {
         };
 
         term.onData((e) => {
-            console.log(lastLineLength);
-            if (lastLineLength == 0) {
-                lastLineLength = getLastLineLength(el);
-            }
-            switch (e) {
-                case "\u0003": // Ctrl+C
-                    term.write("^C");
-                    prompt(term);
-                    break;
-                case "\r": // Enter
-                    runCommand(command);
-                    command = "";
-                    prompt(term);
+            // console.log(lastLineLength);
+            runCommand(e);
+            // if (lastLineLength == 0) {
+            //     lastLineLength = getLastLineLength(el);
+            // }
+            // switch (e) {
+            //     case "\u0003": // Ctrl+C
+            //         term.write("^C");
+            //         prompt(term);
+            //         break;
+            //     case "\r": // Enter
+            //         runCommand(command);
+            //         command = "";
+            //         prompt(term);
 
-                    break;
-                case "\u007F": // Backspace (DEL)
-                    // Do not delete the prompt
-                    if (term._core.buffer.x > lastLineLength) {
-                        term.write("\b \b");
-                        if (command.length > 0) {
-                            command = command.substring(0, command.length - 1);
-                        }
-                    }
-                    break;
-                case "\u0009":
-                    console.log("tabbed", output, ["dd", "ls"]);
-                    break;
-                default:
-                    command += e;
-                    term.write(e);
-            }
+            //         break;
+            //     case "\u007F": // Backspace (DEL)
+            //         // Do not delete the prompt
+            //         if (term._core.buffer.x > lastLineLength) {
+            //             term.write("\b \b");
+            //             if (command.length > 0) {
+            //                 command = command.substring(0, command.length - 1);
+            //             }
+            //         }
+            //         break;
+            //     case "\u0009":
+            //         console.log("tabbed", output, ["dd", "ls"]);
+            //         break;
+            //     default:
+            //         command += e;
+            //         term.write(e);
+            // }
         });
 
         function clearInput(command) {
@@ -106,7 +107,7 @@ function Term(socket) {
                 send({
                     type: "command",
                     id,
-                    data: command + "\n",
+                    data: command,
                 });
             }
         }
@@ -119,7 +120,7 @@ function Term(socket) {
             if (data.type == "id" && id == null) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
-                term.write("\r\n" + data.data);
+                term.write(data.data);
                 lastLineLength = getLastLineLength(el);
             } else {
                 emit(data.type, data.data);
