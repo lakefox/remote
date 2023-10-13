@@ -50,67 +50,13 @@ function Term(socket) {
 
         send({ type: "new" });
 
-        term.prompt = () => {
-            console.log("promt");
-            // term.write("\r\n$ ");
-        };
-
         term.onData((e) => {
-            // console.log(lastLineLength);
-            runCommand(e);
-            // if (lastLineLength == 0) {
-            //     lastLineLength = getLastLineLength(el);
-            // }
-            // switch (e) {
-            //     case "\u0003": // Ctrl+C
-            //         term.write("^C");
-            //         prompt(term);
-            //         break;
-            //     case "\r": // Enter
-            //         runCommand(command);
-            //         command = "";
-            //         prompt(term);
-
-            //         break;
-            //     case "\u007F": // Backspace (DEL)
-            //         // Do not delete the prompt
-            //         if (term._core.buffer.x > lastLineLength) {
-            //             term.write("\b \b");
-            //             if (command.length > 0) {
-            //                 command = command.substring(0, command.length - 1);
-            //             }
-            //         }
-            //         break;
-            //     case "\u0009":
-            //         console.log("tabbed", output, ["dd", "ls"]);
-            //         break;
-            //     default:
-            //         command += e;
-            //         term.write(e);
-            // }
+            send({
+                type: "command",
+                id,
+                data: e,
+            });
         });
-
-        function clearInput(command) {
-            var inputLengh = command.length;
-            for (var i = 0; i < inputLengh; i++) {
-                term.write("\b \b");
-            }
-        }
-        function prompt(term) {
-            command = "";
-            term.prompt();
-        }
-
-        function runCommand(command) {
-            if (command.length > 0) {
-                clearInput(command);
-                send({
-                    type: "command",
-                    id,
-                    data: command,
-                });
-            }
-        }
         function send(data) {
             socket.send(JSON.stringify({ type: "emit", id: connectId, data }));
         }
@@ -121,7 +67,6 @@ function Term(socket) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
                 term.write(data.data);
-                lastLineLength = getLastLineLength(el);
             } else {
                 emit(data.type, data.data);
             }
@@ -134,11 +79,6 @@ function Term(socket) {
                 events[event][i](...args);
             }
         }
-    }
-    function getLastLineLength(el) {
-        return [...el.querySelectorAll('[role="listitem"]')]
-            .filter((e) => e.innerHTML != "&nbsp;")
-            .at(-1).innerHTML.length;
     }
 }
 
