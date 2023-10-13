@@ -50,18 +50,12 @@ function Term(socket) {
 
         send({ type: "new" });
 
-        if (term._initialized) {
-            return;
-        }
-
-        term._initialized = true;
-
         term.prompt = () => {
+            console.log("promt");
             term.write("\r\n$ ");
-            lastLineLength = getLastLineLength(el);
         };
-        prompt(term);
         term.onData((e) => {
+            console.log(lastLineLength);
             switch (e) {
                 case "\u0003": // Ctrl+C
                     term.write("^C");
