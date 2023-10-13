@@ -58,6 +58,7 @@ function Term(socket) {
 
         term.prompt = () => {
             term.write("\r\n$ ");
+            lastLineLength = getLastLineLength(el);
         };
         prompt(term);
         term.onData((e) => {
@@ -123,9 +124,7 @@ function Term(socket) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
                 term.write(data.data);
-                lastLineLength = [...el.querySelectorAll('[role="listitem"]')]
-                    .filter((e) => e.innerHTML != "&nbsp;")
-                    .at(-1).innerHTML.length;
+                lastLineLength = getLastLineLength(el);
             } else {
                 emit(data.type, data.data);
             }
@@ -139,15 +138,10 @@ function Term(socket) {
             }
         }
     }
-    function fitTerminal(term, cont) {
-        const rect = cont.getBoundingClientRect();
-        const cols = Math.floor(
-            rect.width / term._core._renderService.dimensions.actualCellWidth
-        );
-        const rows = Math.floor(
-            rect.height / term._core._renderService.dimensions.actualCellHeight
-        );
-        term.resize(cols, rows);
+    function getLastLineLength(el) {
+        return [...el.querySelectorAll('[role="listitem"]')]
+            .filter((e) => e.innerHTML != "&nbsp;")
+            .at(-1).innerHTML.length;
     }
 }
 
