@@ -96,7 +96,7 @@ function Term(socket) {
             var inputLengh = command.length;
             console.log(term);
             for (var i = 0; i < inputLengh; i++) {
-                term.write("\b");
+                term.write("\b \b");
             }
         }
         function prompt(term) {
@@ -109,7 +109,7 @@ function Term(socket) {
                 send({
                     type: "command",
                     id,
-                    data: command + "\n",
+                    data: command,
                 });
             }
         }
