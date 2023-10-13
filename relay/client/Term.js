@@ -28,7 +28,6 @@ function Term(socket) {
         let fitAddon = new FitAddon.FitAddon();
         term.loadAddon(fitAddon);
         term.open(el);
-        term.loadAddon(new CanvasAddon.CanvasAddon());
 
         // Initialize the ResizeObserver
         const resizeObserver = new ResizeObserver((entries) => {
