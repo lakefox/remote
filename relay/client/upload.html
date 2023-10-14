@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Windows File Explorer</title>
+        <style>
+            .explorer {
+                width: 400px;
+                height: 300px;
+                border: 1px solid #ccc;
+                overflow: auto;
+                padding: 10px;
+            }
+
+            .folder {
+                cursor: pointer;
+                user-select: none;
+                display: flex;
+                align-items: center;
+            }
+
+            .file {
+                cursor: pointer;
+                user-select: none;
+                display: flex;
+                align-items: center;
+            }
+
+            .icon {
+                width: 24px;
+                height: 24px;
+                margin-right: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="explorer" id="explorer">
+            <!-- File explorer content goes here -->
+        </div>
+        <script>
+            class WindowsFileExplorer {
+                #call(event, ...args) {
+                    if (this.events[event]) {
+                        for (let i = 0; i < this.events[event].length; i++) {
+                            this.events[event][i](...args);
+                        }
+                    }
+                }
+                constructor(main, fileTree) {
+                    this.container = document.createElement("div");
+                    main.appendChild(this.container);
+
+                    const fileUpload = document.createElement("input");
+                    fileUpload.type = "file";
+                    fileUpload.id = "fileUpload";
+                    fileUpload.style.display = "none";
+                    main.appendChild(fileUpload);
+
+                    const label = document.createElement("label");
+                    label.htmlFor = "fileUpload";
+                    label.style.width = "100%";
+                    label.style.height = "100%";
+                    label.style.display = "block";
+                    main.appendChild(label);
+
+                    this.fileTree = fileTree;
+                    this.path = [];
+                    this.events = {};
+                    this.renderFolder(this.fileTree, this.container);
+                    this.registerClickEvents();
+                    this.setupFileInput();
+                }
+
+                renderFolder(tree, parentElement) {
+                    parentElement.innerHTML = "";
+                    for (const key in tree) {
+                        const div = document.createElement("div");
+                        const item = tree[key];
+                        const isFolder = typeof item != "string";
+
+                        const icon = document.createElement("div");
+                        icon.classList.add("icon");
+                        console.log(isFolder, item);
+                        if (isFolder) {
+                            icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M20 5h-9.586L8.707 3.293A.997.997 0 0 0 8 3H4c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V7c0-1.103-.897-2-2-2z"></path></svg>`;
+                        } else {
+                            icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm8 7h-1V4l5 5h-4z"></path></svg>`;
+                        }
+
+                        div.appendChild(icon);
+
+                        const text = document.createElement("div");
+                        text.textContent = key;
+                        div.appendChild(text);
+
+                        if (isFolder) {
+                            div.classList.add("folder");
+                        } else {
+                            div.classList.add("file");
+                        }
+                        div.classList.add("clickable");
+                        parentElement.appendChild(div);
+
+                        if (isFolder) {
+                            div.style.fontWeight = "bold";
+                        }
+                    }
+                }
+
+                registerClickEvents() {
+                    const explorer = this;
+                    this.container.addEventListener("click", function (e) {
+                        const target = e.target;
+                        console.log(target);
+                        const folderName = target.textContent;
+                        console.log(folderName, explorer.fileTree);
+                        if (explorer.path.at(-1) != folderName) {
+                            explorer.path.push(folderName);
+                            console.log("adding");
+                        }
+                        let folderContents = explorer.getFolderContents();
+                        console.log(folderContents);
+                        if (folderContents == undefined) {
+                            explorer.path.pop();
+                            folderContents = explorer.getFolderContents();
+                        }
+
+                        if (typeof folderContents != "string") {
+                            explorer.renderFolder(
+                                folderContents,
+                                explorer.container
+                            );
+                            explorer.registerClickEvents();
+                        } else {
+                            explorer.path.pop();
+
+                            explorer.#call(
+                                "open",
+                                explorer.getCurrentFolderPath() +
+                                    "/" +
+                                    folderName
+                            );
+                        }
+                    });
+                }
+
+                getFolderContents() {
+                    let tree = this.fileTree;
+                    for (const folderName of this.path) {
+                        tree = tree[folderName];
+                    }
+                    return tree;
+                }
+
+                setupFileInput() {
+                    const fileInput = document.getElementById("file-input");
+                    const explorer = this;
+                    fileInput.addEventListener("change", function () {
+                        const files = fileInput.files;
+                        if (files.length > 0) {
+                            const folderPath = explorer.getCurrentFolderPath();
+                            for (const file of files) {
+                                const filePath = folderPath + "/" + file.name;
+                                explorer.#call("upload", filePath);
+                            }
+                        }
+                    });
+                }
+
+                getCurrentFolderPath() {
+                    return this.path.join("/");
+                }
+                on(event, cb) {
+                    if (!this.events[event]) {
+                        this.events[event] = [];
+                    }
+                    this.events[event].push(cb);
+                }
+            }
+
+            // Example JSON structure
+            const fileTree = {
+                "Macintosh HD": {},
+                "THUMB DRIVE": {
+                    ".fseventsd": {
+                        "fseventsd-uuid":
+                            "/Volumes/THUMB DRIVE/.fseventsd/fseventsd-uuid",
+                    },
+                    "208.nc": "/Volumes/THUMB DRIVE/208.nc",
+                    "2024.nc": "/Volumes/THUMB DRIVE/2024.nc",
+                    Files: {
+                        "CE3_saturn.gcode":
+                            "/Volumes/THUMB DRIVE/Files/CE3_saturn.gcode",
+                    },
+                    "System Volume Information": {
+                        "WPSettings.dat":
+                            "/Volumes/THUMB DRIVE/System Volume Information/WPSettings.dat",
+                        IndexerVolumeGuid:
+                            "/Volumes/THUMB DRIVE/System Volume Information/IndexerVolumeGuid",
+                    },
+                },
+            };
+
+            // Usage
+            const explorer = new WindowsFileExplorer(
+                document.getElementById("explorer"),
+                fileTree
+            );
+            explorer.on("upload", (name) => {
+                console.log(name);
+            });
+            explorer.on("open", (name) => {
+                console.log(name);
+            });
+        </script>
+    </body>
+</html>

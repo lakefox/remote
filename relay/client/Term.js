@@ -59,7 +59,6 @@ function Term(socket) {
         }
         socket.addEventListener("message", ({ data }) => {
             data = JSON.parse(data);
-            console.log(data);
             if (data.type == "id" && id == null) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
@@ -68,6 +67,50 @@ function Term(socket) {
                 emit(data.type, data.data);
             }
         });
+    };
+
+    this.Interface = function () {
+        let id = null;
+        let cbs = [];
+        let commandSent = false;
+        send({ type: "new" });
+        this.run = (command) => {
+            commandSent = true;
+            send({
+                type: "command",
+                id,
+                data: command + "\n",
+            });
+            return new Promise((resolve) => {
+                cbs.push(resolve);
+            });
+        };
+        let collector = "";
+        let collect = false;
+        socket.addEventListener("message", ({ data }) => {
+            data = JSON.parse(data);
+            if (data.type == "id" && id == null) {
+                id = data.data;
+            } else if (
+                data.type == "response" &&
+                data.id == id &&
+                commandSent
+            ) {
+                if (data.data.indexOf("[?2004") != -1) {
+                    collect = true;
+                } else if (data.data.indexOf("\x1B") != -1) {
+                    cbs.shift()(collector);
+                    collect = false;
+                    commandSent = false;
+                    collector = "";
+                } else if (collect) {
+                    collector += data.data;
+                }
+            }
+        });
+        function send(data) {
+            socket.send(JSON.stringify({ type: "emit", id: connectId, data }));
+        }
     };
 
     function emit(event, ...args) {

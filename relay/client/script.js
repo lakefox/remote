@@ -38,7 +38,6 @@
 
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
-
 const socket = new WebSocket(`wss://ws.lakefox.net/wss`);
 let manager = new Term(socket);
 // manager.connect(123)

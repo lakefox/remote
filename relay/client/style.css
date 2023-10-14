@@ -107,3 +107,8 @@ body {
     font-weight: 700;
     cursor: pointer;
 }
+
+#main {
+    width: 100vw;
+    height: calc(100vh - 30px);
+}
