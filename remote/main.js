@@ -124,10 +124,8 @@ function waiter(pty, id, close) {
     return new Promise(async (resolve, reject) => {
         while (!close()) {
             let res = await pty.read();
-            if (res.trim().length != 0) {
-                console.log(res);
-                send({ type: "response", id, data: res });
-            }
+            console.log(res);
+            send({ type: "response", id, data: res });
         }
     });
 }
