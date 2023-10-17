@@ -12,6 +12,11 @@ class InputDialog {
 
         this.input = document.createElement("input");
         this.input.type = "text";
+        this.input.addEventListener("keydown", (e) => {
+            if (e.key == "Enter") {
+                this.handleOKClick();
+            }
+        });
         this.inputContainer.appendChild(this.input);
 
         this.buttons = document.createElement("div");
@@ -60,6 +65,7 @@ class InputDialog {
 
     showDialog() {
         this.dialog.style.display = "flex";
+        this.input.focus();
     }
 
     hideDialog() {

@@ -29,7 +29,17 @@ function Term(socket) {
         term.loadAddon(fitAddon);
         term.open(el);
         term.write(`Connected to: ${connectId}`);
-        term.write(``);
+        term.write(`\r`);
+        term.onResize((evt) => {
+            console.log(id, evt);
+            if (id != undefined) {
+                send({
+                    type: "command",
+                    id,
+                    data: `stty rows ${evt.rows} && stty cols ${evt.cols} && clear\r`,
+                });
+            }
+        });
 
         // Initialize the ResizeObserver
         const resizeObserver = new ResizeObserver((entries) => {
