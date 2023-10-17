@@ -28,6 +28,8 @@ function Term(socket) {
         let fitAddon = new FitAddon.FitAddon();
         term.loadAddon(fitAddon);
         term.open(el);
+        term.write(`Connected to: ${connectId}`);
+        term.write(``);
 
         // Initialize the ResizeObserver
         const resizeObserver = new ResizeObserver((entries) => {
@@ -50,9 +52,6 @@ function Term(socket) {
                 id,
                 data: e,
             });
-            if (e == " ") {
-                term.write(" ");
-            }
         });
         function send(data) {
             socket.send(JSON.stringify({ type: "emit", id: connectId, data }));
@@ -63,6 +62,7 @@ function Term(socket) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
                 term.write(data.data);
+                term.prompt();
             } else {
                 emit(data.type, data.data);
             }

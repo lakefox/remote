@@ -125,7 +125,7 @@ function waiter(pty, id, close) {
         while (!close()) {
             let res = await pty.read();
             if (res.trim().length != 0) {
-                send({ type: "response", id, data: res });
+                send({ type: "response", id, data: res + "\r" });
             }
         }
     });
