@@ -62,7 +62,6 @@ function Term(socket) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
                 term.write(data.data);
-                term.prompt();
             } else {
                 emit(data.type, data.data);
             }
