@@ -40,13 +40,26 @@ let main = document.querySelector("#main");
 let desktop = new Desktop(main);
 const socket = new WebSocket(`wss://ws.lakefox.net/wss`);
 let manager = new Term(socket);
+// Usage
+const inputDialog = new InputDialog();
 // manager.connect(123)
 // then let t = new manager.Terminal(el);
 //  manager.run()
 manager.on("open", () => {
-    let id = parseInt(prompt("enter id"));
-    manager.connect(id);
-    desktop.new();
+    // Example usage
+    inputDialog
+        .promptUser("Enter device code:")
+        .then((result) => {
+            if (result) {
+                let id = parseInt(result);
+                console.log(id);
+                manager.connect(id);
+                desktop.new();
+            }
+        })
+        .catch((error) => {
+            // alert(error);
+        });
 });
 
 document.querySelector("#new").addEventListener("click", () => {

@@ -95,7 +95,7 @@ async function createSession(id) {
             shell = "powershell.exe";
             break;
         case "darwin":
-            shell = "bash";
+            shell = "zsh";
             break;
         default:
             shell = "bash";
