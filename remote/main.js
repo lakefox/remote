@@ -1,7 +1,6 @@
 import { StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.4/mod.ts";
 import os from "https://deno.land/std@0.123.0/node/os.ts";
-// import { Pty } from "https://deno.land/x/deno_pty_ffi/mod.ts";
-import * as pty from "node-pty";
+import { Pty } from "https://deno.land/x/deno_pty_ffi/mod.ts";
 
 const ws = new StandardWebSocketClient("wss://ws.lakefox.net/wss");
 
@@ -42,13 +41,10 @@ ws.on("message", async (raw) => {
         console.log("new session");
         let id = sessions.length;
         let session = await createSession(id);
-        session.onDate((data) => {
-            send({ type: "response", id, data });
-        });
         sessions.push(session);
-        // waiter(sessions[id], id, () => {
-        //     return false;
-        // });
+        waiter(sessions[id], id, () => {
+            return false;
+        });
         send({ type: "id", data: id });
     } else if (data.type == "command") {
         console.log("COMMAND: ", data.data);
@@ -91,33 +87,24 @@ function send(data, id = undefined) {
 }
 
 async function createSession(id) {
-    // let shell;
+    let shell;
     let env = Env(Deno.env.toObject());
 
-    // switch (os.platform()) {
-    //     case "win32":
-    //         shell = "powershell.exe";
-    //         break;
-    //     case "darwin":
-    //         shell = "zsh";
-    //         break;
-    //     default:
-    //         shell = "bash";
-    //         break;
-    // }
-    // let ptyProcess = await Pty.create({
-    //     cmd: shell,
-    //     env: env,
-    //     args: [],
-    // });
-    const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
-
-    const ptyProcess = pty.spawn(shell, [], {
-        name: "xterm-color",
-        cols: 80,
-        rows: 30,
-        cwd: Deno.cwd(),
+    switch (os.platform()) {
+        case "win32":
+            shell = "powershell.exe";
+            break;
+        case "darwin":
+            shell = "zsh";
+            break;
+        default:
+            shell = "bash";
+            break;
+    }
+    let ptyProcess = await Pty.create({
+        cmd: shell,
         env: env,
+        args: [],
     });
     return ptyProcess;
 }
