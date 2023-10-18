@@ -36,7 +36,9 @@ ws.on("open", () => {
 
 ws.on("message", async (raw) => {
     let data = JSON.parse(raw.data);
-    console.log(data);
+    if (data.type != "resize") {
+        console.log(data);
+    }
     if (data.type == "new") {
         console.log("new session");
         let id = sessions.length;
@@ -64,6 +66,7 @@ ws.on("message", async (raw) => {
         serverId = data.id;
         console.log(serverId);
     } else if (data.type == "resize") {
+        sessions[data.id].getSize();
         sessions[data.id].resize(data.data);
     } else if (data.type == "close") {
         //

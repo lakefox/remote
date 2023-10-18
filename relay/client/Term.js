@@ -31,12 +31,17 @@ function Term(socket) {
         term.write(`Connected to: ${connectId}`);
         term.write(`\r`);
         term.onResize((evt) => {
-            console.log(id, evt);
             if (id != undefined) {
                 send({
                     type: "resize",
                     id,
-                    data: evt,
+                    data: Object.assign(
+                        {
+                            pixel_height: 0,
+                            pixel_width: 0,
+                        },
+                        evt
+                    ),
                 });
             }
         });

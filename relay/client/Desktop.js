@@ -136,9 +136,9 @@ class DesktopWindow {
         resizeHandle.addEventListener("mousedown", this.startResize.bind(this));
 
         const content = document.createElement("div");
-        content.className = "content";
         content.style.width = "100%";
-        content.style.height = "100%";
+        content.style.height = "calc(100% - 20px)";
+        content.style.background = "#000";
         this.content = content;
 
         // add resize observer to adjust to content size also add more addons and make nano work
