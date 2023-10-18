@@ -34,9 +34,9 @@ function Term(socket) {
             console.log(id, evt);
             if (id != undefined) {
                 send({
-                    type: "command",
+                    type: "resize",
                     id,
-                    data: `stty rows ${evt.rows} && stty cols ${evt.cols} && clear\r`,
+                    data: evt,
                 });
             }
         });

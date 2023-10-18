@@ -1,6 +1,6 @@
 import { StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.4/mod.ts";
 import os from "https://deno.land/std@0.123.0/node/os.ts";
-import { Pty } from "https://deno.land/x/deno_pty_ffi/mod.ts";
+import { Pty } from "https://deno.land/x/deno_pty_ffi@0.15.1/mod.ts";
 
 const ws = new StandardWebSocketClient("wss://ws.lakefox.net/wss");
 
@@ -63,6 +63,8 @@ ws.on("message", async (raw) => {
     } else if (data.type == "socket-id") {
         serverId = data.id;
         console.log(serverId);
+    } else if (data.type == "resize") {
+        sessions[data.id].resize(data.data);
     } else if (data.type == "close") {
         //
         console.log("close");
@@ -86,7 +88,7 @@ function send(data, id = undefined) {
     );
 }
 
-async function createSession(id) {
+async function createSession() {
     let shell;
     let env = Env(Deno.env.toObject());
 

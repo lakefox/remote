@@ -190,3 +190,12 @@ a .input-buttons {
         0.5rem 1rem 6rem rgba(0, 0, 0, 0.06),
         0 0 0 0.0625rem rgba(0, 0, 0, 0.015);
 }
+
+#sidePannel {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: calc(100vh - 30px);
+    width: 500px;
+    background: #272633;
+}
