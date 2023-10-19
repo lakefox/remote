@@ -46,6 +46,7 @@
                     }
                 }
                 constructor(main, fileTree) {
+                    this.history;
                     this.container = document.createElement("div");
                     this.container.style.position = "relative";
                     this.container.style.width = "100%";
@@ -103,12 +104,12 @@
                     this.setupFileInput();
                 }
 
-                renderFolder(tree, parentElement) {
+                renderFolder(items, parentElement) {
                     parentElement.innerHTML = "";
-                    for (const key in tree) {
+                    const explorer = this;
+                    for (const item of items) {
                         const div = document.createElement("div");
-                        const item = tree[key];
-                        const isFolder = typeof item != "string";
+                        const isFolder = item.at(-1) == "/";
 
                         const icon = document.createElement("div");
                         icon.classList.add("icon");
@@ -122,14 +123,22 @@
 
                         const text = document.createElement("div");
                         text.className = "text";
-                        text.textContent = key;
+                        text.textContent = item;
                         div.appendChild(text);
 
                         if (isFolder) {
                             div.classList.add("folder");
+                            div.addEventListener("click", () => {
+                                console.log("dir", item);
+                                explorer.#call("dir", item);
+                            });
                         } else {
                             div.classList.add("file");
+                            div.addEventListener("click", () => {
+                                explorer.#call("file", item, (data) => {});
+                            });
                         }
+
                         div.classList.add("clickable");
                         parentElement.appendChild(div);
 
@@ -141,35 +150,18 @@
 
                 registerClickEvents() {
                     const explorer = this;
-                    this.contents.addEventListener("click", function (e) {
-                        const target = e.target;
-                        const folderName = target.textContent;
-                        if (explorer.path.at(-1) != folderName) {
-                            explorer.path.push(folderName);
-                        }
-                        let folderContents = explorer.getFolderContents();
-                        if (folderContents == undefined) {
-                            explorer.path.pop();
-                            folderContents = explorer.getFolderContents();
-                        }
+                    // this.contents.addEventListener("click", function (e) {
+                    const target = e.target;
+                    const folderName = target.textContent;
+                    if (explorer.path.at(-1) != folderName) {
+                        explorer.path.push(folderName);
+                    }
+                    let folderContents = explorer.getFolderContents();
 
-                        if (typeof folderContents != "string") {
-                            explorer.renderFolder(
-                                folderContents,
-                                explorer.contents
-                            );
-                            explorer.registerClickEvents();
-                        } else {
-                            explorer.path.pop();
-
-                            explorer.#call(
-                                "open",
-                                explorer.getCurrentFolderPath() +
-                                    "/" +
-                                    folderName
-                            );
-                        }
-                    });
+                    explorer.#call(
+                        "open",
+                        explorer.getCurrentFolderPath() + "/" + folderName
+                    );
                 }
 
                 getFolderContents() {
@@ -207,27 +199,15 @@
             }
 
             // Example JSON structure
-            const fileTree = {
-                "Macintosh HD": {},
-                "THUMB DRIVE": {
-                    ".fseventsd": {
-                        "fseventsd-uuid":
-                            "/Volumes/THUMB DRIVE/.fseventsd/fseventsd-uuid",
-                    },
-                    "208.nc": "/Volumes/THUMB DRIVE/208.nc",
-                    "2024.nc": "/Volumes/THUMB DRIVE/2024.nc",
-                    Files: {
-                        "CE3_saturn.gcode":
-                            "/Volumes/THUMB DRIVE/Files/CE3_saturn.gcode",
-                    },
-                    "System Volume Information": {
-                        "WPSettings.dat":
-                            "/Volumes/THUMB DRIVE/System Volume Information/WPSettings.dat",
-                        IndexerVolumeGuid:
-                            "/Volumes/THUMB DRIVE/System Volume Information/IndexerVolumeGuid",
-                    },
-                },
-            };
+            const fileTree = [
+                "README.md",
+                "pico.save",
+                "start.sh",
+                "package-lock.json",
+                "relay/",
+                "package.json",
+                "remote/",
+            ];
 
             // Usage
             const explorer = new WindowsFileExplorer(

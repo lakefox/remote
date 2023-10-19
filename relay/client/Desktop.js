@@ -1,13 +1,13 @@
 function Desktop(main) {
     let windows = [];
-    let terminals = [];
     let minimised = [];
-    this.new = () => {
+    this.new = (el, backgroundColor = "#000") => {
         let app = new DesktopWindow(
             main,
-            `Terminal ${terminals.length}`,
+            `Window ${windows.length}`,
             100 + windows.length * 40,
-            100 + windows.length * 40
+            100 + windows.length * 40,
+            backgroundColor
         );
         app.on("close", () => {
             const index = windows.indexOf(app);
@@ -22,8 +22,7 @@ function Desktop(main) {
             minimised.push(app);
             renderMinimised();
         });
-        let t = new manager.Terminal(app.content);
-        terminals.push(t);
+        app.content.appendChild(el);
         windows.push(app);
         bringToTop(windows, app);
     };
@@ -92,7 +91,7 @@ class DesktopWindow {
             }
         }
     }
-    constructor(container, title, x, y) {
+    constructor(container, title, x, y, backgroundColor) {
         this.container = container;
         this.events = {};
         this.title = title;
@@ -101,6 +100,7 @@ class DesktopWindow {
         this.window.className = "window";
         this.window.style.left = x + "px";
         this.window.style.top = y + "px";
+        this.window.style.backgroundColor = backgroundColor;
         this.window.addEventListener("click", (e) => {
             this.#call("click", e);
         });

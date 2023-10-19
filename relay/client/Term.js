@@ -17,7 +17,8 @@ function Term(socket) {
         socket.send(JSON.stringify({ type: "subscribe", id }));
     };
 
-    this.Terminal = function (el) {
+    this.Terminal = function () {
+        let el = document.createElement("div");
         let id = null;
         let term = new window.Terminal({
             cursorBlink: true,
@@ -81,15 +82,21 @@ function Term(socket) {
                 emit(data.type, data.data);
             }
         });
+        return el;
     };
 
     this.Interface = function () {
         let id = null;
+        let hostname = "";
         let cbs = [];
         let commandSent = false;
+        let onConnect;
+        let ready = false;
         send({ type: "new" });
         this.run = (command) => {
+            console.log("send");
             commandSent = true;
+            collect = false;
             send({
                 type: "command",
                 id,
@@ -99,26 +106,53 @@ function Term(socket) {
                 cbs.push(resolve);
             });
         };
+        this.onConnect = (f) => {
+            onConnect = f;
+        };
         let collector = "";
         let collect = false;
         socket.addEventListener("message", ({ data }) => {
             data = JSON.parse(data);
+            console.log("rxd", data);
             if (data.type == "id" && id == null) {
                 id = data.data;
+                console.log("idd", id);
             } else if (
                 data.type == "response" &&
-                data.id == id &&
-                commandSent
+                hostname == "" &&
+                !ready &&
+                data.id == id
             ) {
-                if (data.data.indexOf("[?2004") != -1) {
-                    collect = true;
-                } else if (data.data.indexOf("\x1B") != -1) {
-                    cbs.shift()(collector);
-                    collect = false;
-                    commandSent = false;
-                    collector = "";
-                } else if (collect) {
-                    collector += data.data;
+                console.log("storing");
+                let str = removeANSIEscapeCodes(data.data).match(
+                    /[A-Za-z0-9]+\@[A-Za-z0-9]+/i
+                );
+                if (str != null) {
+                    hostname = str[0];
+                    console.log("ready");
+                    ready = true;
+                    if (onConnect) {
+                        onConnect();
+                    }
+                }
+            } else if (data.type == "response" && hostname == "" && ready) {
+                if (data.type == "response" && data.id == id && commandSent) {
+                    if (data.data.indexOf("[?2004") != -1) {
+                        if (collect) {
+                            collect = false;
+                            let end = collector.indexOf(hostname);
+                            if (end == -1) {
+                                end = collector.length - 1;
+                            }
+                            cbs.shift()(collector.slice(0, end));
+                            commandSent = false;
+                            collector = "";
+                        } else {
+                            collect = true;
+                        }
+                    } else if (collect) {
+                        collector += removeANSIEscapeCodes(data.data);
+                    }
                 }
             }
         });
@@ -133,6 +167,13 @@ function Term(socket) {
                 events[event][i](...args);
             }
         }
+    }
+    function removeANSIEscapeCodes(inputString) {
+        // Regular expression to match ANSI escape codes
+        const ansiEscapeCodeRegex = /(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]/g;
+
+        // Replace ANSI escape codes with an empty string
+        return inputString.replace(ansiEscapeCodeRegex, "");
     }
 }
 

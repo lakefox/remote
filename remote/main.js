@@ -48,9 +48,11 @@ ws.on("message", async (raw) => {
             return false;
         });
         send({ type: "id", data: id });
-    } else if (data.type == "command") {
+    } else if (data.type == "command" && data.id != null) {
         console.log("COMMAND: ", data.data);
+        console.log("starting");
         await sessions[data.id].write(data.data);
+        console.log("done");
     } else if (data.type == "connect") {
         console.log("connect");
         for (let i = 0; i < stats.length; i++) {
@@ -66,7 +68,6 @@ ws.on("message", async (raw) => {
         serverId = data.id;
         console.log(serverId);
     } else if (data.type == "resize") {
-        sessions[data.id].getSize();
         sessions[data.id].resize(data.data);
     } else if (data.type == "close") {
         //
@@ -111,6 +112,11 @@ async function createSession() {
         env: env,
         args: [],
     });
+    if (shell == "zsh") {
+        ptyProcess.write(
+            `setopt PROMPT_CR && setopt PROMPT_SP && export PROMPT_EOL_MARK="" && clear\r`
+        );
+    }
     return ptyProcess;
 }
 
