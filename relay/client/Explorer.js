@@ -7,7 +7,8 @@ function FileExplorer(manager, desktop) {
                     .trim()
                     .replace(/\t+|\n+|\r+/g, " ")
                     .replace(/\s+/g, " ")
-                    .split(" ");
+                    .split(" ")
+                    .filter((e) => e.length != 0);
                 let e = new Explorer(a);
                 e.open((name) => {
                     return new Promise((resolve, reject) => {
@@ -18,6 +19,7 @@ function FileExplorer(manager, desktop) {
                                     .replace(/\t+|\n+|\r+/g, " ")
                                     .replace(/\s+/g, " ")
                                     .split(" ")
+                                    .filter((e) => e.length != 0)
                             );
                         });
                     });
@@ -118,6 +120,13 @@ class Explorer {
         this.contents.innerHTML = "";
         const explorer = this;
         console.log(items);
+        if (items.length == 0) {
+            let div = createElement("div");
+            div.textContent = "No files found";
+            div.style.fontFamily = "monospace";
+            this.contents.appendChild(div);
+            return;
+        }
         for (const item of items) {
             const div = document.createElement("div");
             const isFolder = item.at(-1) == "/";
