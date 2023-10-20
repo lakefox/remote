@@ -53,6 +53,7 @@ class Explorer {
         this.container.style.position = "relative";
         this.container.style.width = "100%";
         this.container.style.height = "100%";
+        this.container.style.overflowY = "auto";
 
         this.contents = document.createElement("div");
         this.contents.className = "files";
@@ -116,6 +117,7 @@ class Explorer {
     render(items) {
         this.contents.innerHTML = "";
         const explorer = this;
+        console.log(items);
         for (const item of items) {
             const div = document.createElement("div");
             const isFolder = item.at(-1) == "/";
