@@ -121,7 +121,7 @@ class Explorer {
         const explorer = this;
         console.log(items);
         if (items.length == 0) {
-            let div = createElement("div");
+            let div = document.createElement("div");
             div.textContent = "No files found";
             div.style.fontFamily = "monospace";
             this.contents.appendChild(div);
