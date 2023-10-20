@@ -19,6 +19,8 @@ function Term(socket) {
 
     this.Terminal = function () {
         let el = document.createElement("div");
+        el.style.width = "100%";
+        el.style.height = "100%";
         let id = null;
         let term = new window.Terminal({
             cursorBlink: true,
@@ -33,6 +35,7 @@ function Term(socket) {
         term.write(`\r`);
         term.onResize((evt) => {
             if (id != undefined) {
+                console.log("resize", evt);
                 send({
                     type: "resize",
                     id,
@@ -94,7 +97,6 @@ function Term(socket) {
         let ready = false;
         send({ type: "new" });
         this.run = (command) => {
-            console.log("send");
             commandSent = true;
             collect = false;
             send({
@@ -113,29 +115,25 @@ function Term(socket) {
         let collect = false;
         socket.addEventListener("message", ({ data }) => {
             data = JSON.parse(data);
-            console.log("rxd", data);
             if (data.type == "id" && id == null) {
                 id = data.data;
-                console.log("idd", id);
             } else if (
                 data.type == "response" &&
                 hostname == "" &&
                 !ready &&
                 data.id == id
             ) {
-                console.log("storing");
                 let str = removeANSIEscapeCodes(data.data).match(
                     /[A-Za-z0-9]+\@[A-Za-z0-9]+/i
                 );
                 if (str != null) {
                     hostname = str[0];
-                    console.log("ready");
                     ready = true;
                     if (onConnect) {
                         onConnect();
                     }
                 }
-            } else if (data.type == "response" && hostname == "" && ready) {
+            } else if (data.type == "response" && hostname != "" && ready) {
                 if (data.type == "response" && data.id == id && commandSent) {
                     if (data.data.indexOf("[?2004") != -1) {
                         if (collect) {

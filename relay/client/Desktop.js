@@ -1,13 +1,13 @@
 function Desktop(main) {
     let windows = [];
     let minimised = [];
-    this.new = (el, backgroundColor = "#000") => {
+    this.new = (el, className) => {
         let app = new DesktopWindow(
             main,
             `Window ${windows.length}`,
             100 + windows.length * 40,
             100 + windows.length * 40,
-            backgroundColor
+            className
         );
         app.on("close", () => {
             const index = windows.indexOf(app);
@@ -91,16 +91,18 @@ class DesktopWindow {
             }
         }
     }
-    constructor(container, title, x, y, backgroundColor) {
+    constructor(container, title, x, y, className) {
         this.container = container;
         this.events = {};
         this.title = title;
 
         this.window = document.createElement("div");
         this.window.className = "window";
+        if (className) {
+            this.window.classList.add(className);
+        }
         this.window.style.left = x + "px";
         this.window.style.top = y + "px";
-        this.window.style.backgroundColor = backgroundColor;
         this.window.addEventListener("click", (e) => {
             this.#call("click", e);
         });

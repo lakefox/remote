@@ -1,3 +1,39 @@
+function FileExplorer(manager, desktop) {
+    this.new = () => {
+        let exInt = new manager.Interface();
+        exInt.onConnect(() => {
+            exInt.run("ls -p").then((a) => {
+                a = a
+                    .trim()
+                    .replace(/\t+|\n+|\r+/g, " ")
+                    .replace(/\s+/g, " ")
+                    .split(" ");
+                let e = new Explorer(a);
+                e.open((name) => {
+                    return new Promise((resolve, reject) => {
+                        exInt.run(`cd ${name} && ls -p`).then((a) => {
+                            resolve(
+                                a
+                                    .trim()
+                                    .replace(/\t+|\n+|\r+/g, " ")
+                                    .replace(/\s+/g, " ")
+                                    .split(" ")
+                            );
+                        });
+                    });
+                });
+                e.read((name) => {
+                    return new Promise((resolve, reject) => {
+                        exInt.run(`cat ${name}`).then(resolve);
+                    });
+                });
+                e.on("file", console.log);
+                desktop.new(e.container, "fileExplorer");
+            });
+        });
+    };
+}
+
 class Explorer {
     #call(event, ...args) {
         if (this.events[event]) {
@@ -8,15 +44,18 @@ class Explorer {
     }
     constructor(items) {
         this.history = [];
+        this.future = [];
         this.fileHandler;
         this.dirHandler;
 
         this.container = document.createElement("div");
+        this.container.className = "explorer";
         this.container.style.position = "relative";
         this.container.style.width = "100%";
         this.container.style.height = "100%";
 
         this.contents = document.createElement("div");
+        this.contents.className = "files";
         this.contents.style.position = "absolute";
         this.contents.style.top = "30px";
         this.contents.style.left = "0";
@@ -38,6 +77,17 @@ class Explorer {
         let navForward = document.createElement("div");
         navForward.className = "forward";
         navForward.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z"></path></svg>`;
+        navBack.addEventListener("click", async () => {
+            this.future.push(this.history.pop());
+            let paths = await this.dirHandler("../");
+            this.render(paths);
+        });
+        navForward.addEventListener("click", async () => {
+            let next = this.future.pop();
+            this.history.push(next);
+            let paths = await this.dirHandler(next);
+            this.render(paths);
+        });
 
         this.navBar.appendChild(navBack);
         this.navBar.appendChild(navForward);
@@ -88,11 +138,9 @@ class Explorer {
             if (isFolder) {
                 div.classList.add("folder");
                 div.addEventListener("click", async () => {
-                    console.log("dir", item);
                     // `cd ${name} && ls -p`
                     this.history.push(item);
                     let paths = await explorer.dirHandler(item);
-                    console.log(paths);
                     explorer.render(paths);
                 });
             } else {
@@ -103,7 +151,6 @@ class Explorer {
                 });
             }
 
-            div.classList.add("clickable");
             this.contents.appendChild(div);
 
             if (isFolder) {

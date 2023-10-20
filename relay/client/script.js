@@ -41,6 +41,7 @@ let desktop = new Desktop(main);
 const socket = new WebSocket(`wss://ws.lakefox.net/wss`);
 let manager = new Term(socket);
 const inputDialog = new InputDialog();
+let explorer = new FileExplorer(manager, desktop);
 
 manager.on("open", () => {
     // Example usage
@@ -61,48 +62,15 @@ manager.on("open", () => {
         });
 });
 
-document.querySelector("#new").addEventListener("click", () => {
+document.querySelector("#newTerm").addEventListener("click", () => {
     let t = new manager.Terminal();
     console.log(t);
     desktop.new(t);
 });
 
-function filePrev() {
-    let exInt = new manager.Interface();
-    exInt.onConnect(() => {
-        exInt.run("ls -p").then((a) => {
-            console.log("done", a);
-            a = a
-                .trim()
-                .replace(/\t+|\n+|\r+/g, " ")
-                .replace(/\s+/g, " ")
-                .split(" ");
-            console.log(a);
-            let e = new Explorer(a);
-            console.log(e);
-            e.open((name) => {
-                return new Promise((resolve, reject) => {
-                    exInt.run(`cd ${name} && ls -p`).then((a) => {
-                        resolve(
-                            a
-                                .trim()
-                                .replace(/\t+|\n+|\r+/g, " ")
-                                .replace(/\s+/g, " ")
-                                .split(" ")
-                        );
-                    });
-                });
-            });
-            e.read((name) => {
-                return new Promise((resolve, reject) => {
-                    exInt.run(`cat ${name}`).then(resolve);
-                });
-            });
-            e.on("file", console.log);
-            desktop.new(e.container, "#fff");
-        });
-    });
-}
+document.querySelector("#newExplorer").addEventListener("click", () => {
+    explorer.new();
+});
 
 // manager.on("info", (data) => {
 //     console.log("add");

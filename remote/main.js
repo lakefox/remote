@@ -50,9 +50,7 @@ ws.on("message", async (raw) => {
         send({ type: "id", data: id });
     } else if (data.type == "command" && data.id != null) {
         console.log("COMMAND: ", data.data);
-        console.log("starting");
         await sessions[data.id].write(data.data);
-        console.log("done");
     } else if (data.type == "connect") {
         console.log("connect");
         for (let i = 0; i < stats.length; i++) {
@@ -114,10 +112,32 @@ async function createSession() {
     });
     if (shell == "zsh") {
         ptyProcess.write(
-            `setopt PROMPT_CR && setopt PROMPT_SP && export PROMPT_EOL_MARK="" && clear\r`
+            `setopt PROMPT_CR && setopt PROMPT_SP && export PROMPT_EOL_MARK=""\r`
         );
+        try {
+            await (() => {
+                return new Promise(async (resolve, reject) => {
+                    let run = true;
+                    let holder;
+                    while (run) {
+                        holder = setTimeout(() => {
+                            run = false;
+                            reject();
+                        }, 100);
+                        await ptyProcess.read();
+                        clearTimeout(holder);
+                    }
+                });
+            })();
+        } catch (error) {
+            console.log("created pty");
+            ptyProcess.write("clear\r");
+            return ptyProcess;
+        }
+    } else {
+        console.log("created pty");
+        return ptyProcess;
     }
-    return ptyProcess;
 }
 
 function Env(obj) {

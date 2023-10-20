@@ -3,6 +3,7 @@ body {
     background-image: url(https://railway.app/illustrations/grid--dark.svg);
     margin: 0;
     padding: 0;
+    overflow: hidden;
 }
 
 #canvasCont {
@@ -61,22 +62,30 @@ body {
 
 #new {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 50px;
-    height: 50px;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 943px;
+    height: 49px;
+    background: #33323e;
+    border: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    font-size: 34px;
+    color: antiquewhite;
+    cursor: pointer;
 }
 
 #new {
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 75px;
-    height: 75px;
+    width: 1100px;
+    max-width: 90%;
+    height: 50px;
     background: #33323e;
     border: none;
     border-top-left-radius: 10px;
-    font-size: 63px;
     color: antiquewhite;
     cursor: pointer;
 }
@@ -196,4 +205,73 @@ a .input-buttons {
     height: calc(100vh - 30px);
     width: 500px;
     background: #272633;
+}
+
+.files {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0 10px 10px 10px;
+}
+
+.file {
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.folder {
+    width: 100px;
+    height: 100px;
+    text-align: center;
+}
+
+.icon {
+    width: 50px;
+    height: 52px;
+    margin: auto;
+}
+
+.text {
+    font-family: sans-serif;
+    color: #cccccc;
+    overflow-wrap: break-word;
+    padding: 10px;
+}
+
+.icon > svg {
+    width: 50px;
+    height: 50px;
+    fill: #9e9e9e;
+}
+
+.forward > svg {
+    height: 25px;
+    fill: #cccccc;
+}
+
+.back > svg {
+    height: 25px;
+    fill: #cccccc;
+}
+
+.fileExplorer {
+    background: #101010;
+}
+
+#newInner {
+    width: 90%;
+    margin: auto;
+    display: flex;
+}
+.openBtn {
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.openBtn > svg {
+    fill: aliceblue;
+    height: 51px;
+    width: 34px;
 }
