@@ -123,7 +123,7 @@ async function createSession() {
                         holder = setTimeout(() => {
                             run = false;
                             reject();
-                        }, 200);
+                        }, 100);
                         await ptyProcess.read();
                         clearTimeout(holder);
                     }

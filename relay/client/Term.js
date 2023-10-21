@@ -134,10 +134,18 @@ function Term(socket) {
                 }
             } else if (data.type == "response" && hostname != "" && ready) {
                 if (data.type == "response" && data.id == id && commandSent) {
+                    if (collect) {
+                        collector += removeANSIEscapeCodes(data.data);
+                    }
                     if (data.data.indexOf("[?2004") != -1) {
                         if (collect) {
                             collect = false;
-                            let end = collector.indexOf(hostname);
+                            let hN = collector.indexOf(hostname);
+                            let tC = collector.indexOf("]0;");
+                            let end = Math.min(
+                                hN == -1 ? Infinity : hN,
+                                tC == -1 ? Infinity : tC
+                            );
                             if (end == -1) {
                                 end = collector.length - 1;
                             }
@@ -147,8 +155,6 @@ function Term(socket) {
                         } else {
                             collect = true;
                         }
-                    } else if (collect) {
-                        collector += removeANSIEscapeCodes(data.data);
                     }
                 }
             }

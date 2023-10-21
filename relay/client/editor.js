@@ -7,7 +7,6 @@ function CodeEditor(manager, desktop) {
             }
             let base = await exInt.run(`pwd`);
             base = base.trim();
-            console.log(base);
             exInt.run("ls -p -R").then((a) => {
                 let files = fileParser(a, base);
                 console.log(files);
@@ -17,21 +16,53 @@ function CodeEditor(manager, desktop) {
                     dt = new desktop.new(editor.html);
                     dt.title(base);
                 });
+                let opeingFile = false;
                 editor.on("open", async (path) => {
                     path = base + path.slice(path.indexOf("/", 1));
-                    console.log(path);
                     dt.title(path);
                     let v = await exInt.run(`cat ${path}`);
+                    opeingFile = true;
                     editor.setValue(path, v);
+                    opeingFile = false;
+                });
+                editor.on("change", async (name, e) => {
+                    if (!opeingFile) {
+                        console.log(e);
+                        saveFile(exInt, name, e);
+                    }
                 });
             });
         });
     };
+
+    function saveFile(exInt, name, e) {
+        let lines = e.split("\n");
+        console.log(lines);
+        let i = 0;
+        function saveLine() {
+            console.log(i);
+            exInt.run(escapeForEcho(lines[i]) + "\n");
+            i++;
+            console.log("done");
+            if (lines[i]) {
+                saveLine(i);
+            } else {
+                exInt.run("EOF\n").then(() => {
+                    console.log("saved");
+                });
+            }
+        }
+        exInt.run(`EOF\n && echo "" > ${name}\n`).then(() => {
+            console.log("saved");
+            exInt.run(`cat << EOF >> ${name}`);
+            console.log("first");
+            saveLine();
+        });
+    }
 }
 
 class Editor {
     call(event, ...args) {
-        console.log(this);
         if (this.events[event]) {
             for (let i = 0; i < this.events[event].length; i++) {
                 this.events[event][i](...args);
@@ -41,10 +72,10 @@ class Editor {
     constructor(base, files) {
         this.events = {};
         this.html = "";
+        this.fileName = "";
         let script = document.createElement("script");
         script.src = `https://cdnjs.cloudflare.com/ajax/libs/ace/1.30.0/ace.min.js`;
         script.onload = () => {
-            console.log("run");
             let container = document.createElement("div");
             container.style.display = "flex";
             container.style.height = "100%";
@@ -57,6 +88,9 @@ class Editor {
             });
 
             this.Ace.setTheme("ace/theme/one_dark");
+            this.Ace.getSession().on("change", (e) => {
+                this.call("change", this.fileName, this.Ace.session.getValue());
+            });
             container.appendChild(makeFiles(base, files, this));
             container.appendChild(editor);
             this.html = container;
@@ -73,7 +107,10 @@ class Editor {
     }
     setValue(name, value) {
         let ext = name.split(".").at(-1);
-        console.log(ext);
+        if (ext == "js") {
+            ext = "javascript";
+        }
+        this.fileName = name;
         this.Ace.session.setMode(`ace/mode/${ext}`);
         this.Ace.session.setValue(value);
     }
@@ -137,7 +174,6 @@ function fileParser(text, base) {
 }
 
 function createFileNavigator(parent, data, base, context) {
-    console.log(data);
     const ul = document.createElement("ul");
     ul.className = "ul";
     parent.appendChild(ul);
@@ -165,7 +201,7 @@ function createFileNavigator(parent, data, base, context) {
             li.textContent = item;
             li.addEventListener("click", () => {
                 console.log(base, item);
-                context.call("open", base + "/" + item);
+                context.call("open", base + item);
             });
         }
     });
@@ -174,38 +210,46 @@ function createFileNavigator(parent, data, base, context) {
 
 function getFolderName(path) {
     // Extract the last part of the path as the folder name
-    const parts = path.split("/");
+    const parts = path.slice(0, -1).split("/");
     return parts[parts.length - 1];
 }
 
 function convertToNestedStructure(data) {
     const result = [];
-
-    // Create a map to track folders by path
-    const foldersMap = new Map();
+    const folderMap = new Map();
 
     data.forEach((item) => {
         const pathParts = item.path.split("/").filter((part) => part !== "");
         let currentFolder = result;
+        let fullPath = "/";
 
-        pathParts.forEach((part, index) => {
-            if (!foldersMap.has(part)) {
+        pathParts.forEach((part) => {
+            fullPath += part + "/";
+            if (!folderMap.has(fullPath)) {
                 const folder = {
-                    path: `/${pathParts.slice(0, index + 1).join("/")}`,
+                    path: fullPath,
                     contents: [],
                 };
-                foldersMap.set(part, folder);
+                folderMap.set(fullPath, folder);
                 currentFolder.push(folder);
             }
-            currentFolder = foldersMap.get(part).contents;
+            currentFolder = folderMap.get(fullPath).contents;
         });
 
-        if (typeof item.contents === "object" && item.contents.length > 0) {
+        if (item.contents) {
             currentFolder.push(...item.contents);
-        } else {
-            currentFolder.push(item.contents);
         }
     });
 
     return result;
+}
+function escapeForEcho(text) {
+    // Escape characters with special meaning in command line
+    const escapedText = text
+        .replace(/\\/g, "\\\\") // Backslash
+        .replace(/"/g, '\\"') // Double quotes
+        .replace(/\$/g, "\\$") // Dollar sign
+        .replace(/`/g, "\\`"); // Backtick
+
+    return escapedText; // Wrap the text in double quotes
 }
