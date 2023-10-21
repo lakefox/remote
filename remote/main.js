@@ -51,7 +51,7 @@ ws.on("message", async (raw) => {
     } else if (data.type == "command" && data.id != null) {
         console.log("COMMAND: ", data.data);
         await sessions[data.id].write(data.data);
-    } else if (data.type == "operation" && data.id != null) {
+    } else if (data.type == "operation") {
         if (data.write) {
             console.log("WRITE: ", data.data.name);
             await Deno.writeTextFile(data.data.name, data.data.data);
@@ -64,7 +64,7 @@ ws.on("message", async (raw) => {
                     name: data.data,
                     data: file,
                 },
-                data.id
+                id
             );
         }
     } else if (data.type == "connect") {
