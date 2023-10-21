@@ -27,38 +27,12 @@ function CodeEditor(manager, desktop) {
                 });
                 editor.on("change", async (name, e) => {
                     if (!opeingFile) {
-                        console.log(e);
-                        saveFile(exInt, name, e);
+                        manager.write(name, e);
                     }
                 });
             });
         });
     };
-
-    function saveFile(exInt, name, e) {
-        let lines = e.split("\n");
-        console.log(lines);
-        let i = 0;
-        function saveLine() {
-            console.log(i);
-            exInt.run(escapeForEcho(lines[i]));
-            i++;
-            console.log("done");
-            if (lines[i]) {
-                saveLine(i);
-            } else {
-                exInt.run("EOF").then(() => {
-                    console.log("saved");
-                });
-            }
-        }
-        exInt.run(`rm ${name}`).then(() => {
-            console.log("saved");
-            exInt.run(`cat << EOF >> ${name}`);
-            console.log("first");
-            saveLine();
-        });
-    }
 }
 
 class Editor {
@@ -242,16 +216,4 @@ function convertToNestedStructure(data) {
     });
 
     return result;
-}
-function escapeForEcho(text) {
-    // Escape characters with special meaning in command line
-    const escapedText = text
-        .replace(/\\/g, "\\\\") // Backslash
-        .replace(/"/g, '\\"') // Double quotes
-        .replace(/\$/g, "\\$") // Dollar sign
-        .replace(/`/g, "\\`") // Backtick
-        .replace(/\n/g, "")
-        .replace(/\r/g, "");
-
-    return escapedText; // Wrap the text in double quotes
 }

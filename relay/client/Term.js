@@ -73,7 +73,6 @@ function Term(socket) {
         });
         socket.addEventListener("message", ({ data }) => {
             data = JSON.parse(data);
-            console.log(data);
             if (data.type == "id" && id == null) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
