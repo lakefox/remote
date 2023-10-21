@@ -40,7 +40,7 @@ function CodeEditor(manager, desktop) {
         console.log(lines);
         let i = 0;
         function saveLine() {
-            console.log(i);
+            console.log(i, e);
             exInt.run(escapeForEcho(lines[i]) + "\n");
             i++;
             console.log("done");
