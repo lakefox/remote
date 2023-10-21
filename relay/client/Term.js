@@ -165,10 +165,14 @@ function Term(socket) {
                 data: file,
             });
             let onMsg = ({ data }) => {
+                data = JSON.parse(data);
+
+                console.log(data);
                 if (
                     data.id == connectId &&
                     data.type == "operation" &&
-                    data.name == file
+                    data.name == file &&
+                    data.read
                 ) {
                     socket.removeEventListener("message", onMsg);
                     resolve(data.data);

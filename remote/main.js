@@ -58,9 +58,11 @@ ws.on("message", async (raw) => {
         } else if (data.read) {
             console.log("READ: ", data.data);
             let file = await Deno.readTextFile(data.data);
+            console.log(file);
             send(
                 {
-                    type: "read",
+                    type: "operation",
+                    read: true,
                     name: data.data,
                     data: file,
                 },
