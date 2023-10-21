@@ -53,8 +53,8 @@ ws.on("message", async (raw) => {
         await sessions[data.id].write(data.data);
     } else if (data.type == "operation") {
         if (data.write) {
-            console.log("WRITE: ", data.data.name);
-            await Deno.writeTextFile(data.data.name, data.data.data);
+            console.log("WRITE: ", data.name);
+            await Deno.writeTextFile(data.name, data.data);
         } else if (data.read) {
             console.log("READ: ", data.data);
             let file = await Deno.readTextFile(data.data);
@@ -66,7 +66,7 @@ ws.on("message", async (raw) => {
                     name: data.data,
                     data: file,
                 },
-                id
+                data.id
             );
         }
     } else if (data.type == "connect") {

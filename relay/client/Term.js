@@ -73,6 +73,7 @@ function Term(socket) {
         });
         socket.addEventListener("message", ({ data }) => {
             data = JSON.parse(data);
+            console.log(data);
             if (data.type == "id" && id == null) {
                 id = data.data;
             } else if (data.type == "response" && data.id == id) {
@@ -157,28 +158,15 @@ function Term(socket) {
             }
         });
     };
-    this.read = (file) => {
+    this.write = (file, data) => {
         return new Promise((resolve) => {
             send({
                 type: "operation",
-                read: true,
-                data: file,
+                write: true,
+                data,
+                name: file,
             });
-            let onMsg = ({ data }) => {
-                data = JSON.parse(data);
-
-                console.log(data);
-                if (
-                    data.id == connectId &&
-                    data.type == "operation" &&
-                    data.name == file &&
-                    data.read
-                ) {
-                    socket.removeEventListener("message", onMsg);
-                    resolve(data.data);
-                }
-            };
-            socket.addEventListener("message", onMsg);
+            resolve({ sucess: true });
         });
     };
     function send(data) {
