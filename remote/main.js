@@ -51,6 +51,22 @@ ws.on("message", async (raw) => {
     } else if (data.type == "command" && data.id != null) {
         console.log("COMMAND: ", data.data);
         await sessions[data.id].write(data.data);
+    } else if (data.type == "operation" && data.id != null) {
+        if (data.write) {
+            console.log("WRITE: ", data.data.name);
+            await Deno.writeTextFile(data.data.name, data.data.data);
+        } else if (data.read) {
+            console.log("READ: ", data.data);
+            let file = await Deno.readTextFile(data.data);
+            send(
+                {
+                    type: "read",
+                    name: data.data,
+                    data: file,
+                },
+                data.id
+            );
+        }
     } else if (data.type == "connect") {
         console.log("connect");
         for (let i = 0; i < stats.length; i++) {

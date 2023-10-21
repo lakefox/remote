@@ -40,19 +40,19 @@ function CodeEditor(manager, desktop) {
         console.log(lines);
         let i = 0;
         function saveLine() {
-            console.log(i, e);
-            exInt.run(escapeForEcho(lines[i]) + "\n");
+            console.log(i);
+            exInt.run(escapeForEcho(lines[i]));
             i++;
             console.log("done");
             if (lines[i]) {
                 saveLine(i);
             } else {
-                exInt.run("EOF\n").then(() => {
+                exInt.run("EOF").then(() => {
                     console.log("saved");
                 });
             }
         }
-        exInt.run(`EOF\n && echo "" > ${name}\n`).then(() => {
+        exInt.run(`rm ${name}`).then(() => {
             console.log("saved");
             exInt.run(`cat << EOF >> ${name}`);
             console.log("first");
@@ -249,7 +249,9 @@ function escapeForEcho(text) {
         .replace(/\\/g, "\\\\") // Backslash
         .replace(/"/g, '\\"') // Double quotes
         .replace(/\$/g, "\\$") // Dollar sign
-        .replace(/`/g, "\\`"); // Backtick
+        .replace(/`/g, "\\`") // Backtick
+        .replace(/\n/g, "")
+        .replace(/\r/g, "");
 
     return escapedText; // Wrap the text in double quotes
 }

@@ -159,6 +159,27 @@ function Term(socket) {
                 }
             }
         });
+
+        this.read = (file) => {
+            return new Promise((resolve) => {
+                send({
+                    type: "operation",
+                    read: true,
+                    data: file,
+                });
+                let onMsg = ({ data }) => {
+                    if (
+                        data.id == connectId &&
+                        data.type == "operation" &&
+                        data.name == file
+                    ) {
+                        socket.removeEventListener("message", onMsg);
+                        resolve(data.data);
+                    }
+                };
+                socket.addEventListener("message", onMsg);
+            });
+        };
         function send(data) {
             socket.send(JSON.stringify({ type: "emit", id: connectId, data }));
         }
