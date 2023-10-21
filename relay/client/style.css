@@ -20,7 +20,7 @@ body {
     border-top: none;
     background-color: #000;
     min-width: 700px;
-    min-height: 300px;
+    min-height: 420px;
     z-index: 1;
     overflow-y: clip;
 }
@@ -51,6 +51,15 @@ body {
     cursor: pointer;
 }
 .minimise {
+    float: right;
+    border: none;
+    background: #808080;
+    color: antiquewhite;
+    height: 22px;
+    margin-top: -2px;
+    cursor: pointer;
+}
+.maximise {
     float: right;
     border: none;
     background: #808080;
@@ -274,4 +283,45 @@ a .input-buttons {
     fill: aliceblue;
     height: 51px;
     width: 34px;
+}
+.explorer {
+    color: #fff;
+    min-height: 390px;
+}
+
+.code {
+    background: #1c1e21;
+    color: aliceblue;
+    font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
+        sans-serif;
+    padding-right: 20px;
+}
+
+.ul {
+    list-style: none;
+    margin-left: -20px;
+    display: none;
+}
+
+li.expanded > ul {
+    display: block;
+}
+
+.fileTag {
+    margin-left: 0px;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.expander::before {
+    content: ">";
+    margin-right: 5px;
+}
+
+.expander.expanded::before {
+    content: "▾";
+}
+
+.fileTag:hover {
+    background: #f0f8ff3b;
 }

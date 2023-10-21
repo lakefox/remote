@@ -1,7 +1,7 @@
 function Desktop(main) {
     let windows = [];
     let minimised = [];
-    this.new = (el, className) => {
+    this.new = function (el, className) {
         let app = new DesktopWindow(
             main,
             `Window ${windows.length}`,
@@ -25,11 +25,13 @@ function Desktop(main) {
         app.content.appendChild(el);
         windows.push(app);
         bringToTop(windows, app);
+        this.title = app.title;
     };
     this.open = (i) => {
         minimised[i].open();
         minimised.splice(i, 1);
     };
+
     function bringToTop(windows, app) {
         let base =
             windows.reduce(
@@ -72,7 +74,7 @@ function Desktop(main) {
             const element = minimised[i];
             let div = document.createElement("div");
             div.className = "tab";
-            div.innerHTML = element.title;
+            div.innerHTML = element.title();
             div.addEventListener("click", () => {
                 minimised[i].open();
                 minimised.splice(i, 1);
@@ -94,7 +96,6 @@ class DesktopWindow {
     constructor(container, title, x, y, className) {
         this.container = container;
         this.events = {};
-        this.title = title;
 
         this.window = document.createElement("div");
         this.window.className = "window";
@@ -103,6 +104,7 @@ class DesktopWindow {
         }
         this.window.style.left = x + "px";
         this.window.style.top = y + "px";
+        this.window.style.height = "400px";
         this.window.addEventListener("click", (e) => {
             this.#call("click", e);
         });
@@ -111,14 +113,63 @@ class DesktopWindow {
 
         const titleBar = document.createElement("div");
         titleBar.style.cursor = "move";
-        titleBar.textContent = title;
+        titleBar.innerHTML = `<span>${title}<span>`;
         titleBar.className = "titleBar";
+        this.title = (e) => {
+            if (e) {
+                titleBar.querySelector("span").innerHTML = e;
+            } else {
+                return titleBar.querySelector("span").innerHTML;
+            }
+        };
         titleBar.addEventListener("mousedown", this.startDrag.bind(this));
 
         const closeButton = document.createElement("button");
         closeButton.textContent = "X";
         closeButton.className = "closeButton";
         closeButton.addEventListener("click", this.close.bind(this));
+
+        const maximise = document.createElement("button");
+        maximise.innerHTML = "&square;";
+        maximise.className = "maximise";
+        this.maxed = false;
+        let max = (e) => {
+            if (!this.maxed) {
+                this.window.style.width = "600px";
+                this.window.style.height = "400px";
+            } else {
+                this.window.style.top = "40px";
+                this.window.style.left = "90px";
+
+                let contStyles = getComputedStyle(this.container);
+                this.window.style.width =
+                    parseInt(contStyles.width) - 180 + "px";
+                this.window.style.height =
+                    parseInt(contStyles.height) - 70 + "px";
+            }
+
+            this.#call("maximise", this.maxed, e);
+        };
+
+        maximise.addEventListener("click", (e) => {
+            this.maxed = !this.maxed;
+            max(e);
+        });
+
+        // Initialize the ResizeObserver
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.target === this.container) {
+                    // The terminal container has been resized
+                    if (this.maxed) {
+                        max();
+                    }
+                }
+            }
+        });
+
+        // Observe changes to the terminal container's size
+        resizeObserver.observe(this.container);
 
         const minimise = document.createElement("button");
         minimise.textContent = "_";
@@ -142,10 +193,9 @@ class DesktopWindow {
         content.style.height = "calc(100% - 20px)";
         this.content = content;
 
-        // add resize observer to adjust to content size also add more addons and make nano work
-
         this.window.appendChild(titleBar);
         titleBar.appendChild(closeButton);
+        titleBar.appendChild(maximise);
         titleBar.appendChild(minimise);
         this.window.appendChild(resizeHandle);
         this.window.appendChild(content);

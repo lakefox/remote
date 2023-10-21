@@ -29,7 +29,17 @@ function FileExplorer(manager, desktop) {
                         exInt.run(`cat ${name}`).then(resolve);
                     });
                 });
-                e.on("file", console.log);
+                e.on("file", (text, name) => {
+                    let holder = document.createElement("div");
+                    holder.innerText = text;
+                    holder.style.background = "#fff";
+                    holder.style.width = "100%";
+                    holder.style.height = "100%";
+                    holder.style.overflowWrap = "break-word";
+                    holder.style.overflowY = "auto";
+                    let dt = new desktop.new(holder);
+                    dt.title(name);
+                });
                 desktop.new(e.container, "fileExplorer");
             });
         });

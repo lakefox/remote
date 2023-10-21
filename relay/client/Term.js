@@ -35,7 +35,6 @@ function Term(socket) {
         term.write(`\r`);
         term.onResize((evt) => {
             if (id != undefined) {
-                console.log("resize", evt);
                 send({
                     type: "resize",
                     id,

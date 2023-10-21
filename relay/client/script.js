@@ -42,6 +42,7 @@ const socket = new WebSocket(`wss://ws.lakefox.net/wss`);
 let manager = new Term(socket);
 const inputDialog = new InputDialog();
 let explorer = new FileExplorer(manager, desktop);
+let codeEditor = new CodeEditor(manager, desktop);
 
 manager.on("open", () => {
     // Example usage
@@ -70,6 +71,10 @@ document.querySelector("#newTerm").addEventListener("click", () => {
 
 document.querySelector("#newExplorer").addEventListener("click", () => {
     explorer.new();
+});
+
+document.querySelector("#newCode").addEventListener("click", () => {
+    codeEditor.new();
 });
 
 // manager.on("info", (data) => {
