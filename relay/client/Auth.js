@@ -77,7 +77,7 @@ function Socket(ws, id, connectId) {
     let channels = {};
     let handler = (raw) => {
         let data = JSON.parse(raw.data);
-        // console.log(data);
+        console.log(data);
         if (data.id == id && data.type == "data") {
             if (data.channel != undefined) {
                 // forward channel message to correct channel
