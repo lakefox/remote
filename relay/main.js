@@ -1,5 +1,5 @@
 import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
-import { Auth } from "../Auth.js";
+import { Auth } from "./client/Auth.js";
 
 const srcDir = Deno.cwd() + "/client";
 
