@@ -224,5 +224,3 @@ function Channel() {
 //         console.log(data.id, "has left");
 //     });
 // });
-
-export { Auth };
