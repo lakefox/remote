@@ -44,7 +44,7 @@ router.get("/wss", (ctx) => {
                         channel.close();
                     });
 
-                    pipeTo.catch(console.log);
+                    channel.catch(pipeTo.emit);
 
                     channel.on("close", () => {
                         pipeTo.close();
