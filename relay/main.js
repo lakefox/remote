@@ -1,8 +1,8 @@
 import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
+import { Auth } from "../Auth.js";
 
 const srcDir = Deno.cwd() + "/client";
 
-let servers = {};
 let connections = {};
 console.log("Relay is up and running...");
 
@@ -23,52 +23,41 @@ router.get("/wss", (ctx) => {
     const ws = ctx.upgrade();
     console.log("Request Upgraded");
 
-    let id = parseInt(Math.random() * 100000);
-    ws.onopen = () => {
-        console.log("Opened: ", id);
-        connections[id] = ws;
-        ws.send(JSON.stringify({ type: "socket-id", id }));
-    };
-    ws.onmessage = (raw) => {
-        let data = JSON.parse(raw.data);
-        console.log("Request: ", data);
-        console.log("Servers: ", servers);
-        console.log("Connections: ", Object.keys(connections));
-        if (data.type == "server") {
-            servers[id] = [];
-        } else if (data.type == "subscribe" && servers[data.id]) {
-            servers[data.id].push(id);
-            connections[data.id].send(JSON.stringify({ type: "connect", id }));
-        } else if (data.type == "emit") {
-            if (data.id) {
-                try {
-                    connections[data.id].send(JSON.stringify(data.data));
-                    console.log("Sent Direct: ", data.id);
-                } catch (error) {
-                    console.log("User Disconnected, removing: ", data.id);
-                    delete connections[data.id];
-                }
-            } else {
-                servers[id].forEach((connection, i) => {
-                    try {
-                        connections[connection].send(JSON.stringify(data.data));
-                        console.log("Sent Mass: ", connection);
-                    } catch (error) {
-                        console.log("User Disconnected, removing: ", data.id);
-                        delete connections[data.id];
-                        console.log("Updating Connections");
-                        servers[id][i] = undefined;
-                    }
-                });
-                servers[id] = servers[id].filter((e) => e);
+    let io = new Auth(ws, true);
+
+    io.on("open", (socket) => {
+        let subscribedTo;
+        console.log("Opened: ", socket.id);
+        connections[socket.id] = socket;
+
+        socket.on("subscribe", (data) => {
+            if (connections[data.id]) {
+                subscribedTo = data.id;
             }
-        }
-    };
-    ws.onclose = () => {
-        delete connections[id];
-        delete servers[id];
-        console.log("Closed");
-    };
+        });
+
+        socket.on("channel", (channel) => {
+            if (subscribedTo) {
+                if (connections[subscribedTo]) {
+                    let pipeTo = connections[subscribedTo].createChannel();
+                    pipeTo.on("close", () => {
+                        channel.close();
+                    });
+
+                    pipeTo.catch(channel.emit);
+
+                    channel.on("close", () => {
+                        pipeTo.close();
+                    });
+                }
+            }
+        });
+
+        socket.on("close", () => {
+            delete connections[socket.id];
+            console.log("Closed");
+        });
+    });
 });
 
 app.use(router.routes());

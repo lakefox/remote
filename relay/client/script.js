@@ -38,13 +38,13 @@
 
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
-const socket = new WebSocket(`wss://ws.lakefox.net/wss`);
-let manager = new Term(socket);
-const inputDialog = new InputDialog();
-let explorer = new FileExplorer(manager, desktop);
-let codeEditor = new CodeEditor(manager, desktop);
+const io = new Auth(`wss://ws.lakefox.net/wss`);
+io.on("open", (socket) => {
+    let manager = new Term(socket);
+    const inputDialog = new InputDialog();
+    let explorer = new FileExplorer(manager, desktop);
+    let codeEditor = new CodeEditor(manager, desktop);
 
-manager.on("open", () => {
     // Example usage
     inputDialog
         .promptUser("Enter device code:")
@@ -52,7 +52,8 @@ manager.on("open", () => {
             if (result) {
                 let id = parseInt(result);
                 console.log(id);
-                manager.connect(id);
+                // manager.connect(id);
+                socket.emit("subscribe", { id });
 
                 let t = new manager.Terminal();
                 desktop.new(t);
@@ -61,20 +62,20 @@ manager.on("open", () => {
         .catch((error) => {
             // alert(error);
         });
-});
 
-document.querySelector("#newTerm").addEventListener("click", () => {
-    let t = new manager.Terminal();
-    console.log(t);
-    desktop.new(t);
-});
+    document.querySelector("#newTerm").addEventListener("click", () => {
+        let t = new manager.Terminal();
+        console.log(t);
+        desktop.new(t);
+    });
 
-document.querySelector("#newExplorer").addEventListener("click", () => {
-    explorer.new();
-});
+    document.querySelector("#newExplorer").addEventListener("click", () => {
+        explorer.new();
+    });
 
-document.querySelector("#newCode").addEventListener("click", () => {
-    codeEditor.new();
+    document.querySelector("#newCode").addEventListener("click", () => {
+        codeEditor.new();
+    });
 });
 
 // manager.on("info", (data) => {

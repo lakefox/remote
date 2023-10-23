@@ -1,112 +1,64 @@
 import { StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.4/mod.ts";
 import os from "https://deno.land/std@0.123.0/node/os.ts";
 import { Pty } from "https://deno.land/x/deno_pty_ffi@0.15.1/mod.ts";
+import { Auth } from "../Auth.js";
 
 const ws = new StandardWebSocketClient("wss://ws.lakefox.net/wss");
-
+let io = new Auth(ws);
 console.log("Socket is up and running...");
 
-let stats = [];
-
-let sessions = [];
-let serverId = null;
-
-ws.on("open", () => {
+io.on("open", (socket) => {
     console.log("Connected");
-    ws.send(JSON.stringify({ type: "server" }));
+    // socket.emit("upgrade", { value: true });
 
-    // Send system information to the client every second
-    setInterval(() => {
-        const cpuUsage = Deno.loadavg();
-        const systemInfo = {
-            cpuUsage: cpuUsage[0],
-            memoryUsage: (1 - os.freemem() / os.totalmem()) * 100,
-            timestamp: Date.now(),
-        };
-        stats.push(systemInfo);
-        send({
-            type: "info",
-            data: systemInfo,
-        });
-        if (stats.length > 100) {
-            stats.shift();
-        }
-    }, 10000);
-});
+    socket.on("channel", (channel) => {
+        let closed = false;
+        let session;
+        console.log("Channel Created");
 
-ws.on("message", async (raw) => {
-    let data = JSON.parse(raw.data);
-    if (data.type != "resize") {
-        console.log(data);
-    }
-    if (data.type == "new") {
-        console.log("new session");
-        let id = sessions.length;
-        let session = await createSession(id);
-        sessions.push(session);
-        waiter(sessions[id], id, () => {
-            return false;
+        channel.on("resize", (data) => {
+            session.resize(data);
         });
-        send({ type: "id", data: id });
-    } else if (data.type == "command" && data.id != null) {
-        console.log("COMMAND: ", data.data);
-        await sessions[data.id].write(data.data);
-    } else if (data.type == "operation") {
-        if (data.write) {
-            console.log("WRITE: ", data.name);
-            await Deno.writeTextFile(data.name, data.data);
-        } else if (data.read) {
-            console.log("READ: ", data.data);
-            let file = await Deno.readTextFile(data.data);
-            console.log(file);
-            send(
-                {
-                    type: "operation",
+
+        channel.on("session", async () => {
+            session = await createSession();
+            waiter(session, channel, () => {
+                return closed;
+            });
+        });
+
+        channel.on("command", async (data) => {
+            console.log("COMMAND: ", data.data);
+            await session.write(data.data);
+        });
+
+        channel.on("operation", async (data) => {
+            if (data.write) {
+                console.log("WRITE: ", data.name);
+                await Deno.writeTextFile(data.name, data.data);
+            } else if (data.read) {
+                console.log("READ: ", data.data);
+                let file = await Deno.readTextFile(data.data);
+                console.log(file);
+                channel.emit("operation", {
                     read: true,
                     name: data.data,
                     data: file,
-                },
-                data.id
-            );
-        }
-    } else if (data.type == "connect") {
-        console.log("connect");
-        for (let i = 0; i < stats.length; i++) {
-            send(
-                {
-                    type: "info",
-                    data: stats[i],
-                },
-                data.id
-            );
-        }
-    } else if (data.type == "socket-id") {
-        serverId = data.id;
-        console.log(serverId);
-    } else if (data.type == "resize") {
-        sessions[data.id].resize(data.data);
-    } else if (data.type == "close") {
-        //
-        console.log("close");
-    }
+                });
+            }
+        });
+
+        channel.on("close", () => {
+            closed = true;
+        });
+    });
+
+    socket.on("close", () => {
+        console.log("Closed");
+    });
 });
 
 ws.on("error", console.error);
-
-ws.on("close", () => {
-    console.log("Closed");
-    sessions = [];
-});
-
-function send(data, id = undefined) {
-    ws.send(
-        JSON.stringify({
-            data,
-            id,
-            type: "emit",
-        })
-    );
-}
 
 async function createSession() {
     let shell;
@@ -169,11 +121,11 @@ function Env(obj) {
     return vars;
 }
 
-function waiter(pty, id, close) {
+function waiter(pty, socket, close) {
     return new Promise(async (resolve, reject) => {
         while (!close()) {
             let res = await pty.read();
-            send({ type: "response", id, data: res });
+            socket.emit("response", { data: res });
         }
     });
 }
