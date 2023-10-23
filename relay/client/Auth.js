@@ -1,4 +1,4 @@
-class Auth {
+export class Auth {
     #call(event, ...args) {
         if (this.events[event]) {
             for (let i = 0; i < this.events[event].length; i++) {

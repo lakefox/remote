@@ -35,7 +35,7 @@
 //         },
 //     },
 // });
-
+import { Auth } from "./Auth.js";
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
 let ws = new WebSocket("ws://localhost:2134/wss");
