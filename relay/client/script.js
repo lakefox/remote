@@ -38,7 +38,8 @@
 
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
-const io = new Auth(`wss://ws.lakefox.net/wss`);
+let ws = new WebSocket("ws://localhost:2134/wss");
+const io = new Auth(ws);
 io.on("open", (socket) => {
     let manager = new Term(socket);
     const inputDialog = new InputDialog();

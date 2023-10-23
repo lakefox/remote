@@ -1,9 +1,9 @@
-import { StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.4/mod.ts";
 import os from "https://deno.land/std@0.123.0/node/os.ts";
 import { Pty } from "https://deno.land/x/deno_pty_ffi@0.15.1/mod.ts";
 import { Auth } from "../Auth.js";
 
-const ws = new StandardWebSocketClient("wss://ws.lakefox.net/wss");
+// const ws = new WebSocket("wss://ws.lakefox.net/wss");
+const ws = new WebSocket("ws://localhost:2134/wss");
 let io = new Auth(ws);
 console.log("Socket is up and running...");
 
@@ -58,7 +58,7 @@ io.on("open", (socket) => {
     });
 });
 
-ws.on("error", console.error);
+// ws.on("error", console.error);
 
 async function createSession() {
     let shell;
