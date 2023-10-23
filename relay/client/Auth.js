@@ -90,6 +90,7 @@ function Socket(ws, id, connectId) {
             data.type == "open" &&
             data.channel !== undefined
         ) {
+            console.log("creating channel");
             // Create channel
             let channel = new Channel();
 
