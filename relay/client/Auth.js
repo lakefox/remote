@@ -101,7 +101,6 @@ function Socket(ws, id, connectId) {
                 this.emit(type, data, data.channel);
             });
 
-            channels.push(channel);
             channels[data.channel] = channel;
             call("channel", channel);
         }
