@@ -2,8 +2,7 @@ import os from "https://deno.land/std@0.123.0/node/os.ts";
 import { Pty } from "https://deno.land/x/deno_pty_ffi@0.15.1/mod.ts";
 import { Auth } from "../relay/client/Auth.js";
 
-// const ws = new WebSocket("wss://ws.lakefox.net/wss");
-const ws = new WebSocket("ws://localhost:2134/wss");
+const ws = new WebSocket("wss://ws.lakefox.net/wss");
 let io = new Auth(ws);
 console.log("Socket is up and running...");
 
