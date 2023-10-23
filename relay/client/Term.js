@@ -6,18 +6,18 @@ function Term(socket) {
         }
         events[name].push(cb);
     };
-    socket.addEventListener("open", () => {
-        emit("open");
-    });
-
-    let connectId = null;
+    // socket.addEventListener("open", () => {
+    //     emit("open");
+    // });
 
     this.connect = (id) => {
-        connectId = id;
-        socket.send(JSON.stringify({ type: "subscribe", id }));
+        channel.emit("subscribe", { id });
     };
 
     this.Terminal = function () {
+        let channel = socket.createChannel();
+        channel.emit("session");
+
         let el = document.createElement("div");
         el.style.width = "100%";
         el.style.height = "100%";
@@ -31,22 +31,19 @@ function Term(socket) {
         let fitAddon = new FitAddon.FitAddon();
         term.loadAddon(fitAddon);
         term.open(el);
-        term.write(`Connected to: ${connectId}`);
+        term.write(`Connected`);
         term.write(`\r`);
         term.onResize((evt) => {
-            if (id != undefined) {
-                send({
-                    type: "resize",
-                    id,
-                    data: Object.assign(
-                        {
-                            pixel_height: 0,
-                            pixel_width: 0,
-                        },
-                        evt
-                    ),
-                });
-            }
+            channel.emit(
+                "resize",
+                Object.assign(
+                    {
+                        pixel_height: 0,
+                        pixel_width: 0,
+                    },
+                    evt
+                )
+            );
         });
 
         // Initialize the ResizeObserver
@@ -62,24 +59,11 @@ function Term(socket) {
         // Observe changes to the terminal container's size
         resizeObserver.observe(el);
 
-        send({ type: "new" });
-
         term.onData((e) => {
-            send({
-                type: "command",
-                id,
-                data: e,
-            });
+            channel.emit("command", { data: e });
         });
-        socket.addEventListener("message", ({ data }) => {
-            data = JSON.parse(data);
-            if (data.type == "id" && id == null) {
-                id = data.data;
-            } else if (data.type == "response" && data.id == id) {
-                term.write(data.data);
-            } else {
-                emit(data.type, data.data);
-            }
+        channel.on("response", ({ data }) => {
+            term.write(data);
         });
         return el;
     };
@@ -168,9 +152,6 @@ function Term(socket) {
             resolve({ sucess: true });
         });
     };
-    function send(data) {
-        socket.send(JSON.stringify({ type: "emit", id: connectId, data }));
-    }
 
     function emit(event, ...args) {
         if (events[event]) {
