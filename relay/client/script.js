@@ -43,8 +43,8 @@ const io = new Auth(ws);
 io.on("open", (socket) => {
     let manager = new Term(socket);
     const inputDialog = new InputDialog();
-    let explorer = new FileExplorer(manager, desktop);
-    let codeEditor = new CodeEditor(manager, desktop);
+    // let explorer = new FileExplorer(manager, desktop);
+    // let codeEditor = new CodeEditor(manager, desktop);
 
     // Example usage
     inputDialog
