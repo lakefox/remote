@@ -20,7 +20,6 @@ export class Auth {
         });
 
         let handler = (raw) => {
-            console.log(raw.data);
             let data = JSON.parse(raw.data);
             if (data.type == "connect") {
                 let connectionId = parseInt(Math.random() * 10000000);
@@ -82,7 +81,7 @@ function Socket(ws, id, connectId) {
     let channels = {};
     let handler = (raw) => {
         let data = JSON.parse(raw.data);
-        console.log(data);
+        // console.log(data);
         if (data.id == id && data.type == "data") {
             if (data.channel != undefined) {
                 // forward channel message to correct channel
