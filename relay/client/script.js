@@ -38,7 +38,7 @@
 import { Auth } from "./Auth.js";
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
-let ws = new WebSocket("wss://lakefox.net/wss");
+let ws = new WebSocket("wss://ws.lakefox.net/wss");
 const io = new Auth(ws);
 io.on("open", (socket) => {
     let manager = new Term(socket);
