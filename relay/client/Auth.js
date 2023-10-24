@@ -57,9 +57,13 @@ export class Auth {
             ws.send(JSON.stringify(data));
         }
 
+        let closed = false;
         this.close = () => {
             ws.addEventListener("message", handler);
-            this.#call("close");
+            if (!closed) {
+                closed = true;
+                call("close");
+            }
         };
     }
     on(event, cb) {
@@ -144,9 +148,13 @@ function Socket(ws, id, connectId) {
         );
     };
 
+    let closed = false;
     this.close = () => {
         ws.addEventListener("message", handler);
-        call("close");
+        if (!closed) {
+            closed = true;
+            call("close");
+        }
     };
 }
 
@@ -187,9 +195,13 @@ function Channel(ws, id, connectId, channel) {
             })
         );
     };
+    let closed = false;
     this.close = () => {
         ws.addEventListener("message", handler);
-        call("close");
+        if (!closed) {
+            closed = true;
+            call("close");
+        }
     };
     this.on = (event, cb) => {
         if (!events[event]) {
