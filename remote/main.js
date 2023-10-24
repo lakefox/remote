@@ -23,7 +23,7 @@ io.on("open", (socket) => {
 
         channel.on("session", async () => {
             session = await createSession();
-            waiter(session, channel, () => {
+            waiter(() => {
                 return closed;
             });
         });
@@ -55,11 +55,11 @@ io.on("open", (socket) => {
             closed = true;
         });
 
-        function waiter(pty, channel, close) {
+        function waiter(close) {
             return new Promise(async (resolve, reject) => {
                 while (!close()) {
-                    let res = await pty.read();
-                    console.log(res);
+                    let res = await session.read();
+                    console.log("Response");
                     channel.emit("response", { data: res });
                 }
             });
