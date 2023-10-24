@@ -31,9 +31,10 @@ router.get("/wss", (ctx) => {
         connections[socket.id] = socket;
 
         socket.on("subscribe", (data) => {
-            console.log(connections);
+            console.log(connections, data);
             if (connections[data.id]) {
                 subscribedTo = data.id;
+                console.log(subscribedTo);
             }
         });
 
