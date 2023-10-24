@@ -49,7 +49,10 @@ router.get("/wss", (ctx) => {
                         console.log("session");
                     });
 
-                    channel.catch(pipeTo.emit);
+                    channel.catch((type, data) => {
+                        console.log("Relaying", type);
+                        pipeTo.emit(type, data);
+                    });
 
                     channel.on("close", () => {
                         pipeTo.close();
