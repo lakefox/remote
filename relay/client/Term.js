@@ -63,6 +63,7 @@ function Term(socket) {
             channel.emit("command", { data: e });
         });
         channel.on("response", ({ data }) => {
+            console.log("data");
             term.write(data);
         });
         return el;
