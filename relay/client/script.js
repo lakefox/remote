@@ -40,6 +40,7 @@ import { FileExplorer } from "./Explorer.js";
 import { InputDialog } from "./InputDialog.js";
 import { CodeEditor } from "./CodeEditor.js";
 import { Desktop } from "./Desktop.js";
+import { Term } from "./Term.js";
 
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
