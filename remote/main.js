@@ -16,7 +16,9 @@ io.on("open", (socket) => {
         console.log("Channel Created");
 
         channel.on("resize", (data) => {
-            session.resize(data);
+            if (session) {
+                session.resize(data);
+            }
         });
 
         channel.on("session", async () => {
@@ -28,7 +30,9 @@ io.on("open", (socket) => {
 
         channel.on("command", async (data) => {
             console.log("COMMAND: ", data.data);
-            await session.write(data.data);
+            if (session) {
+                await session.write(data.data);
+            }
         });
 
         channel.on("operation", async (data) => {
