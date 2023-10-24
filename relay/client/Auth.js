@@ -18,7 +18,6 @@ export class Auth {
             }
         });
         let connectionId = parseInt(Math.random() * 10000000);
-        console.log(connectionId);
         let handler = (raw) => {
             let data = JSON.parse(raw.data);
             if (data.type == "connect") {
@@ -79,7 +78,6 @@ function Socket(ws, id, connectId) {
 
         if (data.id == id && data.type == "data") {
             if (data.channel == undefined) {
-                console.log("Socket: ", data);
                 call(data.data.type, data.data.data);
             }
         } else if (
@@ -153,7 +151,6 @@ function Channel(ws, id, connectId, channel) {
     let events = {};
     let catchAll = () => {};
     function call(event, ...args) {
-        console.log(events);
         if (events[event]) {
             for (let i = 0; i < events[event].length; i++) {
                 events[event][i](...args);
@@ -166,7 +163,6 @@ function Channel(ws, id, connectId, channel) {
     let handler = (raw) => {
         let data = JSON.parse(raw.data);
         if (data.id == id && data.type == "data" && data.channel == channel) {
-            console.log("Channel: ", data);
             call(data.data.type, data.data.data);
         }
     };

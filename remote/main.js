@@ -124,11 +124,12 @@ function Env(obj) {
     return vars;
 }
 
-function waiter(pty, socket, close) {
+function waiter(pty, channel, close) {
     return new Promise(async (resolve, reject) => {
         while (!close()) {
             let res = await pty.read();
-            socket.emit("response", { data: res });
+            console.log(res);
+            channel.emit("response", { data: res });
         }
     });
 }
