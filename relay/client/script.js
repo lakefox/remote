@@ -38,7 +38,7 @@
 import { Auth } from "./Auth.js";
 import { FileExplorer } from "./Explorer.js";
 import { InputDialog } from "./InputDialog.js";
-import { CodeEditor } from "./Editor.js";
+import { CodeEditor } from "./CodeEditor.js";
 import { Desktop } from "./Desktop.js";
 
 let main = document.querySelector("#main");
