@@ -63,28 +63,25 @@ function Term(socket) {
             channel.emit("command", { data: e });
         });
         channel.on("response", ({ data }) => {
-            console.log("data");
             term.write(data);
         });
         return el;
     };
 
     this.Interface = function () {
+        let channel = socket.createChannel();
         let id = null;
         let hostname = "";
         let cbs = [];
         let commandSent = false;
         let onConnect;
         let ready = false;
-        send({ type: "new" });
+        channel.emit("session");
+
         this.run = (command) => {
             commandSent = true;
             collect = false;
-            send({
-                type: "command",
-                id,
-                data: command + "\n",
-            });
+            channel.emit("command", { data: command + "\n" });
             return new Promise((resolve) => {
                 cbs.push(resolve);
             });
@@ -94,16 +91,9 @@ function Term(socket) {
         };
         let collector = "";
         let collect = false;
-        socket.addEventListener("message", ({ data }) => {
-            data = JSON.parse(data);
-            if (data.type == "id" && id == null) {
-                id = data.data;
-            } else if (
-                data.type == "response" &&
-                hostname == "" &&
-                !ready &&
-                data.id == id
-            ) {
+        channel.on("response", (data) => {
+            console.log(data);
+            if (hostname == "" && !ready) {
                 let str = removeANSIEscapeCodes(data.data).match(
                     /[A-Za-z0-9]+\@[A-Za-z0-9]+/i
                 );
@@ -114,8 +104,8 @@ function Term(socket) {
                         onConnect();
                     }
                 }
-            } else if (data.type == "response" && hostname != "" && ready) {
-                if (data.type == "response" && data.id == id && commandSent) {
+            } else if (hostname != "" && ready) {
+                if (commandSent) {
                     if (collect) {
                         collector += removeANSIEscapeCodes(data.data);
                     }
