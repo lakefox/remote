@@ -1,4 +1,4 @@
-class InputDialog {
+export class InputDialog {
     constructor() {
         this.dialog = document.createElement("div");
         this.dialog.className = "input-dialog";

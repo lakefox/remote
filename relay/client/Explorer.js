@@ -1,4 +1,4 @@
-function FileExplorer(manager, desktop) {
+export function FileExplorer(manager, desktop) {
     this.new = () => {
         let exInt = new manager.Interface();
         exInt.onConnect(() => {

@@ -36,16 +36,22 @@
 //     },
 // });
 import { Auth } from "./Auth.js";
+import { FileExplorer } from "./Explorer.js";
+import { InputDialog } from "./InputDialog.js";
+import { CodeEditor } from "./Editor.js";
+import { Desktop } from "./Desktop.js";
+
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
 let ws = new WebSocket("wss://ws.lakefox.net/wss");
 const io = new Auth(ws);
+
 io.on("open", (socket) => {
     console.log(socket.id);
     let manager = new Term(socket);
     const inputDialog = new InputDialog();
-    // let explorer = new FileExplorer(manager, desktop);
-    // let codeEditor = new CodeEditor(manager, desktop);
+    let explorer = new FileExplorer(manager, desktop);
+    let codeEditor = new CodeEditor(manager, desktop);
 
     // Example usage
     inputDialog

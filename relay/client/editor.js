@@ -1,4 +1,4 @@
-function CodeEditor(manager, desktop) {
+export function CodeEditor(manager, desktop) {
     this.new = async (pwd = "") => {
         let exInt = new manager.Interface();
         exInt.onConnect(async () => {

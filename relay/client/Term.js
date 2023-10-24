@@ -1,4 +1,4 @@
-function Term(socket) {
+export function Term(socket) {
     let events = {};
     this.on = (name, cb) => {
         if (!events[name]) {

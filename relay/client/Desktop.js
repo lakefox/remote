@@ -1,4 +1,4 @@
-function Desktop(main) {
+export function Desktop(main) {
     let windows = [];
     let minimised = [];
     this.new = function (el, className) {
