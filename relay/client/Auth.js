@@ -170,6 +170,7 @@ function Channel() {
     let catchAll = () => {};
     let emitter;
     function call(event, ...args) {
+        console.log(events);
         if (events[event]) {
             for (let i = 0; i < events[event].length; i++) {
                 events[event][i](...args);
