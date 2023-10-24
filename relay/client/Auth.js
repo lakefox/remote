@@ -100,9 +100,12 @@ function Socket(ws, id, connectId) {
 
             channels[data.channel] = channel;
             call("channel", function () {
-                this.on = channel.on;
-                this.emit = channel.emit;
-                this.catch = channel.catch;
+                let ch = channel;
+                return new (function () {
+                    this.on = ch.on;
+                    this.emit = ch.emit;
+                    this.catch = ch.catch;
+                })();
             });
         }
     };
