@@ -88,7 +88,8 @@ function Socket(ws, id, connectId) {
         ) {
             console.log("creating channel");
             // Create channel
-            call("channel", new Channel(ws, id, connectId, data.channel));
+            let channel = new Channel(ws, id, connectId, data.channel);
+            call("channel", channel);
         }
     };
     ws.addEventListener("message", handler);
@@ -119,7 +120,8 @@ function Socket(ws, id, connectId) {
             })
         );
         // Create channel
-        return new Channel(ws, id, connectId, channelId);
+        let channel = new Channel(ws, id, connectId, channelId);
+        return channel;
     };
 
     this.catch = (cA) => {
