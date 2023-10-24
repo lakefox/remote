@@ -27,8 +27,8 @@ router.get("/wss", (ctx) => {
 
     io.on("open", (socket) => {
         let subscribedTo;
-        console.log("Opened: ", socket.id);
-        connections[socket.id] = socket;
+        console.log("Opened: ", socket.id.connection);
+        connections[socket.id.connection] = socket;
 
         socket.on("subscribe", (data) => {
             console.log(connections, data);
