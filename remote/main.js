@@ -8,7 +8,6 @@ console.log("Socket is up and running...");
 
 io.on("open", (socket) => {
     console.log("Connected", io.id);
-    // socket.emit("upgrade", { value: true });
 
     socket.on("channel", (channel) => {
         let closed = false;
@@ -42,7 +41,6 @@ io.on("open", (socket) => {
             } else if (data.read) {
                 console.log("READ: ", data.data);
                 let file = await Deno.readTextFile(data.data);
-                console.log(file);
                 channel.emit("operation", {
                     read: true,
                     name: data.data,

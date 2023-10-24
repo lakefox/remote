@@ -16,6 +16,9 @@ export class Auth {
             if (master) {
                 send({ type: "connect" });
             }
+            setInterval(() => {
+                send("ping");
+            }, 10000);
         });
         let connectionId = parseInt(Math.random() * 10000000);
         let handler = (raw) => {
