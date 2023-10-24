@@ -18,6 +18,7 @@ export class Auth {
             }
         });
         let connectionId = parseInt(Math.random() * 10000000);
+        console.log(connectionId);
         let handler = (raw) => {
             let data = JSON.parse(raw.data);
             if (data.type == "connect") {

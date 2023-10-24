@@ -41,6 +41,7 @@ let desktop = new Desktop(main);
 let ws = new WebSocket("wss://ws.lakefox.net/wss");
 const io = new Auth(ws);
 io.on("open", (socket) => {
+    console.log(socket.id);
     let manager = new Term(socket);
     const inputDialog = new InputDialog();
     // let explorer = new FileExplorer(manager, desktop);
