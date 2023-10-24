@@ -7,7 +7,7 @@ let io = new Auth(ws);
 console.log("Socket is up and running...");
 
 io.on("open", (socket) => {
-    console.log("Connected", socket.id);
+    console.log("Connected", io.id);
     // socket.emit("upgrade", { value: true });
 
     socket.on("channel", (channel) => {
