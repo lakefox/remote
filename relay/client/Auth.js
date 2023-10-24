@@ -75,9 +75,10 @@ function Socket(ws, id, connectId) {
     let catchAll = () => {};
     let handler = (raw) => {
         let data = JSON.parse(raw.data);
-        console.log("Socket: ", data);
+
         if (data.id == id && data.type == "data") {
             if (data.channel == undefined) {
+                console.log("Socket: ", data);
                 call(data.data.type, data.data.data);
             }
         } else if (
@@ -161,8 +162,8 @@ function Channel(ws, id, connectId, channel) {
 
     let handler = (raw) => {
         let data = JSON.parse(raw.data);
-        console.log("Channel: ", data);
         if (data.id == id && data.type == "data" && data.channel == channel) {
+            console.log("Channel: ", data);
             call(data.data.type, data.data.data);
         }
     };
