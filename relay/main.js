@@ -45,7 +45,7 @@ router.get("/wss", (ctx) => {
                     pipeTo.on("close", () => {
                         channel.close();
                     });
-
+                    console.log("listne for session");
                     channel.on("session", () => {
                         console.log("session");
                     });
