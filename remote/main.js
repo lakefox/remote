@@ -52,6 +52,7 @@ io.on("open", (socket) => {
         });
 
         channel.on("close", () => {
+            console.log("CLose");
             closed = true;
         });
 
@@ -70,8 +71,6 @@ io.on("open", (socket) => {
         console.log("Closed");
     });
 });
-
-// ws.on("error", console.error);
 
 async function createSession() {
     let shell;

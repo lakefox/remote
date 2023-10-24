@@ -92,6 +92,9 @@ function Socket(ws, id, connectId) {
         }
     };
     ws.addEventListener("message", handler);
+    ws.addEventListener("close", () => {
+        call("close");
+    });
 
     function call(event, ...args) {
         if (events[event]) {
@@ -167,6 +170,9 @@ function Channel(ws, id, connectId, channel) {
         }
     };
     ws.addEventListener("message", handler);
+    ws.addEventListener("close", () => {
+        call("close");
+    });
     this.id = channel;
     this.emit = (type, data) => {
         ws.send(
