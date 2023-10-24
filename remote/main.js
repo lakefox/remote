@@ -23,7 +23,7 @@ io.on("open", (socket) => {
 
         channel.on("session", async () => {
             session = await createSession();
-            waiter(session, channel, () => {
+            new waiter(session, channel, () => {
                 return closed;
             });
         });
