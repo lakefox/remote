@@ -31,6 +31,7 @@ router.get("/wss", (ctx) => {
         connections[socket.id] = socket;
 
         socket.on("subscribe", (data) => {
+            console.log(connections);
             if (connections[data.id]) {
                 subscribedTo = data.id;
             }
@@ -42,6 +43,10 @@ router.get("/wss", (ctx) => {
                     let pipeTo = connections[subscribedTo].createChannel();
                     pipeTo.on("close", () => {
                         channel.close();
+                    });
+
+                    channel.on("session", () => {
+                        console.log("session");
                     });
 
                     channel.catch(pipeTo.emit);
