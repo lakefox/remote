@@ -129,7 +129,7 @@ function Socket(ws, id, connectId) {
         catchAll = cA;
     };
 
-    this.id = id;
+    this.id = connectId;
     this.emit = (type, data) => {
         ws.send(
             JSON.stringify({
