@@ -44,6 +44,7 @@ router.get("/wss", (ctx) => {
                 if (connections[subscribedTo]) {
                     let pipeTo = connections[subscribedTo].createChannel();
                     pipeTo.on("close", () => {
+                        delete connections[subscribedTo];
                         channel.close();
                     });
 
