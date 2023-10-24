@@ -59,7 +59,7 @@ io.on("open", (socket) => {
             return new Promise(async (resolve, reject) => {
                 while (!close()) {
                     let res = await session.read();
-                    console.log("Response");
+                    console.log("Response", channel.id);
                     channel.emit("response", { data: res });
                 }
             });
