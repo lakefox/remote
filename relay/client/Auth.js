@@ -74,15 +74,11 @@ export class Auth {
 function Socket(ws, id, connectId) {
     let events = {};
     let catchAll = () => {};
-    let channels = {};
     let handler = (raw) => {
         let data = JSON.parse(raw.data);
         console.log(data);
         if (data.id == id && data.type == "data") {
-            if (data.channel != undefined) {
-                // forward channel message to correct channel
-                channels[data.channel].forward(data.data.type, data.data.data);
-            } else {
+            if (data.channel == undefined) {
                 call(data.data.type, data.data.data);
             }
         } else if (
@@ -92,24 +88,7 @@ function Socket(ws, id, connectId) {
         ) {
             console.log("creating channel");
             // Create channel
-            let channel = new Channel();
-
-            channel.emitter((type, data) => {
-                this.emit(type, data, data.channel);
-            });
-
-            channels[data.channel] = channel;
-            call("channel", function () {
-                let ch = channel;
-                return new (function () {
-                    this.on = (type, data) => {
-                        console.log(ch);
-                        ch.on(type, data);
-                    };
-                    this.emit = ch.emit;
-                    this.catch = ch.catch;
-                })();
-            });
+            call("channel", new Channel(ws, id, connectId, data.channel));
         }
     };
     ws.addEventListener("message", handler);
@@ -140,14 +119,7 @@ function Socket(ws, id, connectId) {
             })
         );
         // Create channel
-        let channel = new Channel();
-
-        channel.emitter((type, data) => {
-            this.emit(type, data, channelId);
-        });
-
-        channels[channelId] = channel;
-        return channel;
+        return new Channel(ws, id, connectId, channelId);
     };
 
     this.catch = (cA) => {
@@ -155,12 +127,11 @@ function Socket(ws, id, connectId) {
     };
 
     this.id = id;
-    this.emit = (type, data, channel = undefined) => {
+    this.emit = (type, data) => {
         ws.send(
             JSON.stringify({
                 type: "data",
                 id: connectId,
-                channel,
                 data: {
                     type,
                     data,
@@ -175,10 +146,9 @@ function Socket(ws, id, connectId) {
     };
 }
 
-function Channel() {
+function Channel(ws, id, connectId, channel) {
     let events = {};
     let catchAll = () => {};
-    let emitter;
     function call(event, ...args) {
         console.log(events);
         if (events[event]) {
@@ -189,17 +159,33 @@ function Channel() {
             catchAll(event, ...args);
         }
     }
-    this.forward = (type, data) => {
-        console.log("Forwarding", type);
-        call(type, data);
+
+    let handler = (raw) => {
+        let data = JSON.parse(raw.data);
+        console.log(data);
+        if (data.id == id && data.type == "data" && data.channel == channel) {
+            call(data.data.type, data.data.data);
+        }
     };
+    ws.addEventListener("message", handler);
+
     this.emit = (type, data) => {
-        emitter(type, data);
+        ws.send(
+            JSON.stringify({
+                type: "data",
+                id: connectId,
+                channel,
+                data: {
+                    type,
+                    data,
+                },
+            })
+        );
     };
-    this.emitter = (cb) => {
-        emitter = cb;
+    this.close = () => {
+        ws.addEventListener("message", handler);
+        call("close");
     };
-    this.close;
     this.on = (event, cb) => {
         if (!events[event]) {
             events[event] = [];
