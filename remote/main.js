@@ -2,73 +2,77 @@ import os from "https://deno.land/std@0.123.0/node/os.ts";
 import { Pty } from "https://deno.land/x/deno_pty_ffi@0.15.1/mod.ts";
 import { Auth } from "../relay/client/Auth.js";
 
-const ws = new WebSocket("wss://ws.lakefox.net/wss");
-let io = new Auth(ws);
-console.log("Socket is up and running...");
+function main() {
+    const ws = new WebSocket("wss://ws.lakefox.net/wss");
+    let io = new Auth(ws);
+    console.log("Socket is up and running...");
 
-io.on("open", (socket) => {
-    console.log("Connected", io.id);
+    io.on("open", (socket) => {
+        console.log("Connected", io.id);
 
-    socket.on("channel", (channel) => {
-        let closed = false;
-        let session;
-        console.log("Channel Created");
+        socket.on("channel", (channel) => {
+            let closed = false;
+            let session;
+            console.log("Channel Created");
 
-        channel.on("resize", (data) => {
-            if (session) {
-                session.resize(data);
-            }
-        });
-
-        channel.on("session", async () => {
-            session = await createSession();
-            waiter(() => {
-                return closed;
+            channel.on("resize", (data) => {
+                if (session) {
+                    session.resize(data);
+                }
             });
-        });
 
-        channel.on("command", async (data) => {
-            console.log("COMMAND: ", data.data);
-            if (session) {
-                await session.write(data.data);
-            }
-        });
+            channel.on("session", async () => {
+                session = await createSession();
+                waiter(() => {
+                    return closed;
+                });
+            });
 
-        channel.on("operation", async (data) => {
-            if (data.write) {
-                console.log("WRITE: ", data.name);
-                await Deno.writeTextFile(data.name, data.data);
-            } else if (data.read) {
-                console.log("READ: ", data.data);
-                let file = await Deno.readTextFile(data.data);
-                channel.emit("operation", {
-                    read: true,
-                    name: data.data,
-                    data: file,
+            channel.on("command", async (data) => {
+                console.log("COMMAND: ", data.data);
+                if (session) {
+                    await session.write(data.data);
+                }
+            });
+
+            channel.on("operation", async (data) => {
+                if (data.write) {
+                    console.log("WRITE: ", data.name);
+                    await Deno.writeTextFile(data.name, data.data);
+                } else if (data.read) {
+                    console.log("READ: ", data.data);
+                    let file = await Deno.readTextFile(data.data);
+                    channel.emit("operation", {
+                        read: true,
+                        name: data.data,
+                        data: file,
+                    });
+                }
+            });
+
+            channel.on("close", () => {
+                console.log("CLose");
+                closed = true;
+            });
+
+            function waiter(close) {
+                return new Promise(async (resolve, reject) => {
+                    while (!close()) {
+                        let res = await session.read();
+                        console.log("Response", channel.id);
+                        channel.emit("response", { data: res });
+                    }
                 });
             }
         });
 
-        channel.on("close", () => {
-            console.log("CLose");
-            closed = true;
+        socket.on("close", () => {
+            console.log("Closed");
+            main();
         });
-
-        function waiter(close) {
-            return new Promise(async (resolve, reject) => {
-                while (!close()) {
-                    let res = await session.read();
-                    console.log("Response", channel.id);
-                    channel.emit("response", { data: res });
-                }
-            });
-        }
     });
-
-    socket.on("close", () => {
-        console.log("Closed");
-    });
-});
+}
+main();
 
 async function createSession() {
     let shell;
