@@ -52,6 +52,11 @@ router.get("/wss", (ctx) => {
                         pipeTo.emit(type, data);
                     });
 
+                    pipeTo.catch((type, data) => {
+                        console.log("Relaying", type);
+                        channel.emit(type, data);
+                    });
+
                     channel.on("close", () => {
                         pipeTo.close();
                     });
