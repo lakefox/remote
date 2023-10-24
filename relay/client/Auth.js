@@ -102,7 +102,10 @@ function Socket(ws, id, connectId) {
             call("channel", function () {
                 let ch = channel;
                 return new (function () {
-                    this.on = ch.on;
+                    this.on = (type, data) => {
+                        console.log(ch);
+                        ch.on(type, data);
+                    };
                     this.emit = ch.emit;
                     this.catch = ch.catch;
                 })();
