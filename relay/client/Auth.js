@@ -99,7 +99,11 @@ function Socket(ws, id, connectId) {
             });
 
             channels[data.channel] = channel;
-            call("channel", channel);
+            call("channel", function () {
+                this.on = channel.on;
+                this.emit = channel.emit;
+                this.catch = channel.catch;
+            });
         }
     };
     ws.addEventListener("message", handler);
@@ -180,7 +184,7 @@ function Channel() {
         }
     }
     this.forward = (type, data) => {
-        console.log("Forwardeding", type);
+        console.log("Forwarding", type);
         call(type, data);
     };
     this.emit = (type, data) => {
