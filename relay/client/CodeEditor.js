@@ -20,7 +20,7 @@ export function CodeEditor(manager, desktop) {
                 editor.on("open", async (path) => {
                     path = base + path.slice(path.indexOf("/", 1));
                     dt.title(path);
-                    let v = await exInt.run(`cat ${path}`);
+                    let v = await exInt.read(path);
                     opeingFile = true;
                     editor.setValue(path, v);
                     opeingFile = false;

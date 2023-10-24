@@ -18,7 +18,6 @@ export function Term(socket) {
         let el = document.createElement("div");
         el.style.width = "100%";
         el.style.height = "100%";
-        let id = null;
         let term = new window.Terminal({
             cursorBlink: true,
             convertEol: true,
@@ -67,7 +66,6 @@ export function Term(socket) {
 
     this.Interface = function () {
         let channel = socket.createChannel();
-        let id = null;
         let hostname = "";
         let cbs = [];
         let commandSent = false;
@@ -129,14 +127,30 @@ export function Term(socket) {
             }
         });
     };
-    this.write = (file, data) => {
+
+    this.read = (file) => {
+        let channel = socket.createChannel();
         return new Promise((resolve) => {
-            send({
-                type: "operation",
-                write: true,
-                data,
-                name: file,
+            channel.emit("operation", {
+                read: true,
+                data: file,
             });
+            channel.on("operation", ({ data }) => {
+                channel.close();
+                resolve(data);
+            });
+        });
+    };
+
+    this.write = (file, data) => {
+        let channel = socket.createChannel();
+        return new Promise((resolve) => {
+            channel.emit("operation", {
+                write: true,
+                name: file,
+                data,
+            });
+            channel.close();
             resolve({ sucess: true });
         });
     };
