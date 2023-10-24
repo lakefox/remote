@@ -44,7 +44,6 @@ export class Auth {
                 let socket = new Socket(ws, this.id, connectionId);
                 // Name the connection with the ident if you initated or the connection ID
                 // if they did
-                console.log(this.id);
                 this.#call("open", socket, this.id);
             }
         };
@@ -76,7 +75,7 @@ function Socket(ws, id, connectId) {
     let catchAll = () => {};
     let handler = (raw) => {
         let data = JSON.parse(raw.data);
-        console.log(data);
+        console.log("Socket: ", data);
         if (data.id == id && data.type == "data") {
             if (data.channel == undefined) {
                 call(data.data.type, data.data.data);
@@ -162,7 +161,7 @@ function Channel(ws, id, connectId, channel) {
 
     let handler = (raw) => {
         let data = JSON.parse(raw.data);
-        console.log(data);
+        console.log("Channel: ", data);
         if (data.id == id && data.type == "data" && data.channel == channel) {
             call(data.data.type, data.data.data);
         }
