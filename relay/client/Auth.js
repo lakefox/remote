@@ -179,6 +179,7 @@ function Channel() {
         }
     }
     this.forward = (type, data) => {
+        console.log("Forwardeding", type);
         call(type, data);
     };
     this.emit = (type, data) => {
