@@ -151,6 +151,7 @@ function Channel(ws, id, connectId, channel) {
     let events = {};
     let catchAll = () => {};
     function call(event, ...args) {
+        console.log(event, channel);
         if (events[event]) {
             for (let i = 0; i < events[event].length; i++) {
                 events[event][i](...args);
