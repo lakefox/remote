@@ -6,9 +6,6 @@ export function Term(socket) {
         }
         events[name].push(cb);
     };
-    // socket.addEventListener("open", () => {
-    //     emit("open");
-    // });
 
     this.connect = (id) => {
         channel.emit("subscribe", { id });
