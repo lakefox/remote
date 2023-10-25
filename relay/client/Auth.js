@@ -55,12 +55,12 @@ export class Auth {
         ws.addEventListener("close", () => {
             this.#call("close");
         });
-
+        let close = this.close;
         function send(data) {
             if (ws.readyState == 1) {
                 ws.send(JSON.stringify(data));
             } else {
-                this.close();
+                close();
             }
         }
 
