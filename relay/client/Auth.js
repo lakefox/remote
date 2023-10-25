@@ -57,8 +57,11 @@ export class Auth {
         });
 
         function send(data) {
-            console.log(ws.readyState);
-            ws.send(JSON.stringify(data));
+            if (ws.readyState == 1) {
+                ws.send(JSON.stringify(data));
+            } else {
+                this.close();
+            }
         }
 
         let closed = false;
@@ -122,13 +125,18 @@ function Socket(ws, id, connectId) {
 
     this.createChannel = () => {
         let channelId = parseInt(Math.random() * 10000000);
-        ws.send(
-            JSON.stringify({
-                type: "open",
-                id: connectId,
-                channel: channelId,
-            })
-        );
+        if (ws.readyState == 1) {
+            ws.send(
+                JSON.stringify({
+                    type: "open",
+                    id: connectId,
+                    channel: channelId,
+                })
+            );
+        } else {
+            this.close();
+        }
+
         // Create channel
         let channel = new Channel(ws, id, connectId, channelId);
         return channel;
@@ -140,16 +148,20 @@ function Socket(ws, id, connectId) {
 
     this.id = connectId;
     this.emit = (type, data) => {
-        ws.send(
-            JSON.stringify({
-                type: "data",
-                id: connectId,
-                data: {
-                    type,
-                    data,
-                },
-            })
-        );
+        if (ws.readyState == 1) {
+            ws.send(
+                JSON.stringify({
+                    type: "data",
+                    id: connectId,
+                    data: {
+                        type,
+                        data,
+                    },
+                })
+            );
+        } else {
+            this.close();
+        }
     };
 
     let closed = false;
@@ -187,17 +199,21 @@ function Channel(ws, id, connectId, channel) {
     });
     this.id = channel;
     this.emit = (type, data) => {
-        ws.send(
-            JSON.stringify({
-                type: "data",
-                id: connectId,
-                channel,
-                data: {
-                    type,
-                    data,
-                },
-            })
-        );
+        if (ws.readyState == 1) {
+            ws.send(
+                JSON.stringify({
+                    type: "data",
+                    id: connectId,
+                    channel,
+                    data: {
+                        type,
+                        data,
+                    },
+                })
+            );
+        } else {
+            this.close();
+        }
     };
     let closed = false;
     this.close = () => {
