@@ -55,15 +55,6 @@ export class Auth {
         ws.addEventListener("close", () => {
             this.#call("close");
         });
-        let close = this.close;
-        function send(data) {
-            if (ws.readyState == 1) {
-                ws.send(JSON.stringify(data));
-            } else {
-                close();
-            }
-        }
-
         let closed = false;
         this.close = () => {
             ws.addEventListener("message", handler);
@@ -72,6 +63,14 @@ export class Auth {
                 call("close");
             }
         };
+        let close = this.close;
+        function send(data) {
+            if (ws.readyState == 1) {
+                ws.send(JSON.stringify(data));
+            } else {
+                close();
+            }
+        }
     }
     on(event, cb) {
         if (!this.events[event]) {
