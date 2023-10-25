@@ -60,7 +60,7 @@ export class Auth {
             ws.addEventListener("message", handler);
             if (!closed) {
                 closed = true;
-                call("close");
+                this.#call("close");
             }
         };
         let close = this.close;
