@@ -57,7 +57,7 @@ export class Auth {
         });
 
         function send(data) {
-            console.log(ws.readState);
+            console.log(ws.readyState);
             ws.send(JSON.stringify(data));
         }
 
