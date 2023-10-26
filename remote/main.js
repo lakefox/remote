@@ -66,7 +66,6 @@ function main(args) {
                 return new Promise(async (resolve, reject) => {
                     while (!close()) {
                         let res = await session.read();
-                        console.log("Response", channel.id);
                         channel.emit("response", { data: res });
                     }
                 });

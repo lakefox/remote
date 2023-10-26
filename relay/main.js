@@ -1,7 +1,7 @@
 import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
 import { Auth } from "./client/Auth.js";
 
-const srcDir = Deno.cwd() + "/client";
+const srcDir = "./client";
 
 let connections = {};
 let mappedConnections = {};
