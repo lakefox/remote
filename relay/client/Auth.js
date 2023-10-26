@@ -57,7 +57,7 @@ export class Auth {
         });
         let closed = false;
         this.close = () => {
-            ws.addEventListener("message", handler);
+            ws.removeEventListener("message", handler);
             if (!closed) {
                 closed = true;
                 this.#call("close");
@@ -95,7 +95,6 @@ function Socket(ws, id, connectId) {
             data.type == "open" &&
             data.channel !== undefined
         ) {
-            console.log("creating channel");
             // Create channel
             let channel = new Channel(ws, id, connectId, data.channel);
             call("channel", channel);
@@ -165,7 +164,7 @@ function Socket(ws, id, connectId) {
 
     let closed = false;
     this.close = () => {
-        ws.addEventListener("message", handler);
+        ws.removeEventListener("message", handler);
         if (!closed) {
             closed = true;
             call("close");
@@ -216,7 +215,7 @@ function Channel(ws, id, connectId, channel) {
     };
     let closed = false;
     this.close = () => {
-        ws.addEventListener("message", handler);
+        ws.removeEventListener("message", handler);
         if (!closed) {
             closed = true;
             call("close");
