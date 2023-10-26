@@ -1,15 +1,22 @@
 import os from "https://deno.land/std@0.123.0/node/os.ts";
+import { parse } from "https://deno.land/std@0.204.0/flags/mod.ts";
 import { Pty } from "https://deno.land/x/deno_pty_ffi@0.15.1/mod.ts";
 import { Auth } from "../relay/client/Auth.js";
 
-function main() {
+// ./remote --org=automated --id=1
+
+function main(args) {
     const ws = new WebSocket("wss://ws.lakefox.net/wss");
     let io = new Auth(ws);
     console.log("Socket is up and running...");
 
     io.on("open", (socket) => {
         console.log("Connected", io.id);
-
+        socket.emit("ident", {
+            org: args.org,
+            id: args.id,
+            ioID: io.id,
+        });
         socket.on("channel", (channel) => {
             let closed = false;
             let session;
@@ -68,11 +75,13 @@ function main() {
 
         socket.on("close", () => {
             console.log("Closed");
-            main();
+            main(args);
         });
     });
 }
-main();
+let args = parse(Deno.args);
+console.log(args);
+main(args);
 
 async function createSession() {
     let shell;

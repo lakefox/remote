@@ -115,6 +115,7 @@ class DesktopWindow {
         titleBar.style.cursor = "move";
         titleBar.innerHTML = `<span>${title}<span>`;
         titleBar.className = "titleBar";
+
         this.title = (e) => {
             if (e) {
                 titleBar.querySelector("span").innerHTML = e;

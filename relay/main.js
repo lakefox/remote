@@ -4,6 +4,8 @@ import { Auth } from "./client/Auth.js";
 const srcDir = Deno.cwd() + "/client";
 
 let connections = {};
+let mappedConnections = {};
+
 console.log("Relay is up and running...");
 
 const app = new Application();
@@ -32,10 +34,25 @@ router.get("/wss", (ctx) => {
 
         socket.on("subscribe", (data) => {
             console.log("Subscribing");
-            if (connections[data.id]) {
-                subscribedTo = data.id;
-                console.log(subscribedTo);
+            if (mappedConnections[data.org]) {
+                let id = mappedConnections[data.org][data.id];
+                if (id) {
+                    if (connections[id]) {
+                        subscribedTo = data.id;
+                        console.log(
+                            `${socket.id} sub'd to #${data.id} at ${data.org}`
+                        );
+                    }
+                }
             }
+        });
+
+        socket.on("ident", (data) => {
+            if (mappedConnections[data.org] === undefined) {
+                mappedConnections[data.org] = {};
+            }
+            mappedConnections[data.org][data.id] = data.ioID;
+            console.log("IDENTED: ", data.id, data.org);
         });
 
         socket.on("channel", (channel) => {

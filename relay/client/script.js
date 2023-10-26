@@ -62,7 +62,7 @@ io.on("open", (socket) => {
                 let id = parseInt(result);
                 console.log(id);
                 // manager.connect(id);
-                socket.emit("subscribe", { id });
+                socket.emit("subscribe", { org: "automated", id });
 
                 let t = new manager.Terminal();
                 desktop.new(t);
