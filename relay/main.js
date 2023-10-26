@@ -38,7 +38,7 @@ router.get("/wss", (ctx) => {
                 let id = mappedConnections[data.org][data.id];
                 if (id) {
                     if (connections[id]) {
-                        subscribedTo = data.id;
+                        subscribedTo = id;
                         console.log(
                             `${socket.id} sub'd to #${data.id} at ${data.org}`
                         );
