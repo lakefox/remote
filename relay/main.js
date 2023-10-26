@@ -39,7 +39,7 @@ router.get("/wss", (ctx) => {
         });
 
         socket.on("channel", (channel) => {
-            console.log("Channel Created", subscribedTo);
+            console.log("Channel Created");
             if (subscribedTo) {
                 if (connections[subscribedTo]) {
                     let pipeTo = connections[subscribedTo].createChannel();
