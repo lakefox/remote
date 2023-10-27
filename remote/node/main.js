@@ -1,5 +1,6 @@
 import * as os from "node:os";
 import * as pty from "node-pty";
+import "dotenv/config";
 import "websocket-polyfill";
 import fs from "fs";
 import { Auth } from "../../relay/client/Auth.js";

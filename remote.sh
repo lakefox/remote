@@ -1,2 +1,1 @@
-cd remote/node/
-node main.js --org=automated
+/usr/bin/node remote/node/main.js --org=automated
