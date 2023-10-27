@@ -85,20 +85,6 @@ body {
     cursor: pointer;
 }
 
-#new {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 1100px;
-    max-width: 90%;
-    height: 50px;
-    background: #33323e;
-    border: none;
-    border-top-left-radius: 10px;
-    color: antiquewhite;
-    cursor: pointer;
-}
-
 #tabs {
     height: 30px;
     width: 100%;

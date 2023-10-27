@@ -2,10 +2,10 @@ import { div, button, input, style } from "./html.js";
 
 export class InputDialog {
     constructor() {
-        this.dialog = div`class="${css["input-dialog"]}" style="display: none;"`;
-        this.inputContainer = div`class="${css["input-container"]}"`;
+        this.dialog = div`class="${inputdialog}" style="display: none;"`;
+        this.inputContainer = div`class="${inputcontainer}"`;
 
-        this.prompt = div`class="${css["input-prompt"]}"`;
+        this.prompt = div`class="${inputprompt}"`;
         this.inputContainer.appendChild(this.prompt);
 
         this.input = input`type="text"`;
@@ -16,7 +16,7 @@ export class InputDialog {
         });
         this.inputContainer.appendChild(this.input);
 
-        this.buttons = div`class="${css["input-buttons"]}"`;
+        this.buttons = div`class="${inputbuttons}"`;
         this.inputContainer.appendChild(this.buttons);
 
         this.okButton = button`textContent="OK"`;
@@ -66,8 +66,8 @@ export class InputDialog {
     }
 }
 
-let css = style`
-.input-dialog {
+let { inputdialog, inputcontainer, inputprompt, inputbuttons } = style`
+.inputdialog {
     position: fixed;
     top: 0;
     left: 0;
@@ -83,7 +83,7 @@ let css = style`
     align-content: center;
 }
 
-.input-prompt {
+.inputprompt {
     font-size: 18px;
     margin-bottom: 10px;
     color: #c5c5c5;
@@ -91,7 +91,7 @@ let css = style`
     width: 350px;
 }
 
-.input-dialog input {
+.inputdialog input {
     width: 350px;
     padding: 8px;
     font-size: 16px;
@@ -99,11 +99,11 @@ let css = style`
     border-radius: 4px;
     margin-bottom: 10px;
 }
-a .input-buttons {
+a .inputbuttons {
     text-align: right;
 }
 
-.input-dialog button {
+.inputdialog button {
     padding: 8px 16px;
     margin: 5px;
     font-size: 16px;
@@ -114,20 +114,20 @@ a .input-buttons {
     border-radius: 3px;
 }
 
-.input-dialog button:hover {
+.inputdialog button:hover {
     background-color: #007bff;
     color: #fff;
 }
 
-.input-dialog button:active {
+.inputdialog button:active {
     background-color: #0056b3;
 }
 
-.input-dialog button:focus {
+.inputdialog button:focus {
     outline: none;
 }
 
-.input-container {
+.inputcontainer {
     background: #13111c;
     width: 500px;
     height: 300px;

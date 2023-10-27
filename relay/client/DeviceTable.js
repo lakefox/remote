@@ -1,17 +1,11 @@
 import { select, option, style } from "./html.js";
 
-let { container } = style`
-    .dropdown {
-        
-    }
-`;
-
 export class DeviceTable {
     constructor(devices) {
-        let dropdown = select`class="${container}"`;
+        let dropDown = select`class="${dropdown}"`;
 
         for (let i = 0; i < devices.length; i++) {
-            dropdown.appendChild(
+            dropDown.appendChild(
                 option`value="${devices[i]}" innerHTML="${devices[i]}"`
             );
         }
@@ -19,3 +13,8 @@ export class DeviceTable {
         return dropdown;
     }
 }
+let { dropdown } = style`
+    .dropdown {
+        
+    }
+`;

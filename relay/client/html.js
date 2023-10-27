@@ -210,3 +210,64 @@ function renameCSSClasses(css) {
         classMap,
     };
 }
+
+export function State(v) {
+    let context = {};
+    let dependencies = {};
+    let renders = {};
+    this.f = async (render = () => {}) => {
+        let name = `f${Object.keys(renders).length}`;
+        renders[name] = render;
+        try {
+            await run(render, name, context);
+        } catch (error) {
+            // this doesn't need to do anything
+        }
+    };
+    this.define = (name, element) => {
+        context[name] = element;
+    };
+    this.listen = (name, event, handler) => {
+        context[name].addEventListener(event, async () => {
+            let ctx = context;
+            ctx.parent = context[name];
+            await run(handler, name, ctx, dependencies);
+        });
+    };
+    async function run(func, name, context) {
+        let require = {};
+        for (const key in context) {
+            if (Object.hasOwnProperty.call(context, key)) {
+                Object.defineProperty(require, key, {
+                    get() {
+                        if (dependencies[key] == undefined) {
+                            dependencies[key] = [];
+                        }
+                        if (dependencies[key].indexOf(name) == -1) {
+                            dependencies[key].push(name);
+                        }
+                        return context[key];
+                    },
+                });
+            }
+        }
+        let data = func(require);
+        if (typeof data?.then === "function") {
+            data = await data;
+        }
+        Object.assign(context, data);
+        for (const key in dependencies) {
+            if (Object.hasOwnProperty.call(dependencies, key)) {
+                for (let i = 0; i < dependencies[key].length; i++) {
+                    if (
+                        renders[dependencies[key][i]] &&
+                        dependencies[key][i] != name
+                    ) {
+                        console.log(name, key, dependencies[key][i]);
+                        renders[dependencies[key][i]](context);
+                    }
+                }
+            }
+        }
+    }
+}
