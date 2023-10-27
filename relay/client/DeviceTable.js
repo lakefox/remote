@@ -1,13 +1,21 @@
-import { div, style } from "./html.js";
+import { select, option, style } from "./html.js";
 
 let { container } = style`
-    #container {
-        font-weight: 600;
+    .dropdown {
+        
     }
 `;
 
-class DeviceTable {
-    constructor() {
-        let cont = div`class="${container}" style="width:100%;"`;
+export class DeviceTable {
+    constructor(devices) {
+        let dropdown = select`class="${container}"`;
+
+        for (let i = 0; i < devices.length; i++) {
+            dropdown.appendChild(
+                option`value="${devices[i]}" innerHTML="${devices[i]}"`
+            );
+        }
+
+        return dropdown;
     }
 }

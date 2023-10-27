@@ -1,40 +1,3 @@
-// const ctx = document.getElementById("systemChart").getContext("2d");
-// const systemChart = new Chart(ctx, {
-//     type: "line",
-//     data: {
-//         labels: [],
-//         datasets: [
-//             {
-//                 label: "CPU Usage (%)",
-//                 data: [],
-//                 borderColor: "rgba(255, 99, 132, 1)",
-//                 backgroundColor: "rgba(255, 99, 132, 0.2)",
-//                 fill: true,
-//             },
-//             {
-//                 label: "Memory Usage (%)",
-//                 data: [],
-//                 borderColor: "rgba(54, 162, 235, 1)",
-//                 backgroundColor: "rgba(54, 162, 235, 0.2)",
-//                 fill: true,
-//             },
-//         ],
-//     },
-//     options: {
-//         responsive: true,
-//         maintainAspectRatio: false,
-//         scales: {
-//             x: {
-//                 type: "linear",
-//                 position: "bottom",
-//             },
-//             y: {
-//                 beginAtZero: true,
-//                 max: 100,
-//             },
-//         },
-//     },
-// });
 import { Auth } from "./Auth.js";
 import { FileExplorer } from "./Explorer.js";
 import { InputDialog } from "./InputDialog.js";
@@ -86,22 +49,3 @@ io.on("open", (socket) => {
         codeEditor.new();
     });
 });
-
-// manager.on("info", (data) => {
-//     console.log("add");
-//     systemChart.data.labels.push(new Date(data.timestamp).toLocaleTimeString());
-//     systemChart.data.datasets[0].data.push(parseInt(data.cpuUsage.toFixed(2)));
-//     systemChart.data.datasets[1].data.push(
-//         parseInt(data.memoryUsage.toFixed(2))
-//     );
-
-//     // Limit the number of data points displayed
-//     if (systemChart.data.labels.length > 100) {
-//         systemChart.data.labels.shift();
-//         systemChart.data.datasets[0].data.shift();
-//         systemChart.data.datasets[1].data.shift();
-//     }
-
-//     // Update the chart
-//     systemChart.update();
-// });

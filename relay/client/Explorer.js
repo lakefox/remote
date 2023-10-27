@@ -1,3 +1,5 @@
+import { div, input, label, style } from "./html.js";
+
 export function FileExplorer(manager, desktop) {
     this.new = () => {
         let exInt = new manager.Interface();
@@ -30,13 +32,7 @@ export function FileExplorer(manager, desktop) {
                     });
                 });
                 e.on("file", (text, name) => {
-                    let holder = document.createElement("div");
-                    holder.innerText = text;
-                    holder.style.background = "#fff";
-                    holder.style.width = "100%";
-                    holder.style.height = "100%";
-                    holder.style.overflowWrap = "break-word";
-                    holder.style.overflowY = "auto";
+                    let holder = div`innerText="${text}" class="${css.holder}"`;
                     let dt = new desktop.new(holder);
                     dt.title(name);
                 });
@@ -60,36 +56,15 @@ class Explorer {
         this.fileHandler;
         this.dirHandler;
 
-        this.container = document.createElement("div");
-        this.container.className = "explorer";
-        this.container.style.position = "relative";
-        this.container.style.width = "100%";
-        this.container.style.height = "100%";
-        this.container.style.overflowY = "auto";
-
-        this.contents = document.createElement("div");
-        this.contents.className = "files";
-        this.contents.style.position = "absolute";
-        this.contents.style.top = "30px";
-        this.contents.style.left = "0";
-        this.contents.style.zIndex = "2";
+        this.container = div`class="${css.explorer} ${css.fileExplorer}" style="position: relative; width: 100%; height: 100%; overflow-y: auto;"`;
+        this.contents = div`class="${css.files}" style="position: absolute; top: 30px; left: 0; z-index: 2;"`;
         this.container.appendChild(this.contents);
 
-        this.navBar = document.createElement("div");
-        this.navBar.style.position = "absolute";
-        this.navBar.style.top = "0";
-        this.navBar.style.left = "0";
-        this.navBar.style.zIndex = "2";
-        this.navBar.style.width = "100%";
-        this.navBar.style.height = "30px";
-        this.navBar.style.display = "flex";
+        this.navBar = div`class="${css.navBar}"`;
 
-        let navBack = document.createElement("div");
-        navBack.className = "back";
-        navBack.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z"></path></svg>`;
-        let navForward = document.createElement("div");
-        navForward.className = "forward";
-        navForward.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z"></path></svg>`;
+        let navBack = div`class="${css.back}" innerHTML='${backSvg}'`;
+        let navForward = div`class="${css.forward}" innerHTML='${forwardSvg}'`;
+
         navBack.addEventListener("click", async () => {
             this.future.push(this.history.pop());
             let paths = await this.dirHandler("../");
@@ -106,21 +81,11 @@ class Explorer {
         this.navBar.appendChild(navForward);
         this.container.appendChild(this.navBar);
 
-        this.fileUpload = document.createElement("input");
-        this.fileUpload.type = "file";
-        this.fileUpload.id = "fileUpload";
-        this.fileUpload.style.display = "none";
+        this.fileUpload = input`type="file" id="fileUpload" style="display: none;"`;
         this.container.appendChild(this.fileUpload);
 
-        const label = document.createElement("label");
-        label.htmlFor = "fileUpload";
-        label.style.width = "100%";
-        label.style.height = "100%";
-        label.style.display = "block";
-        label.style.position = "absolute";
-        label.style.top = "0";
-        label.style.left = "0";
-        this.container.appendChild(label);
+        const labelComp = label`for="fileUpload" class="${css.label}"`;
+        this.container.appendChild(labelComp);
 
         this.events = {};
         this.render(items);
@@ -131,51 +96,45 @@ class Explorer {
         const explorer = this;
         console.log(items);
         if (items.length == 0) {
-            let div = document.createElement("div");
-            div.textContent = "No files found";
-            div.style.fontFamily = "monospace";
-            this.contents.appendChild(div);
+            this.contents.appendChild(
+                div`textContent="No files found" style="font-family: monospace;"`
+            );
             return;
         }
         for (const item of items) {
-            const div = document.createElement("div");
+            const iconDiv = div``;
             const isFolder = item.at(-1) == "/";
 
-            const icon = document.createElement("div");
-            icon.classList.add("icon");
+            const icon = div`class="${css.icon}"`;
             if (isFolder) {
                 icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M20 5h-9.586L8.707 3.293A.997.997 0 0 0 8 3H4c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V7c0-1.103-.897-2-2-2z"></path></svg>`;
             } else {
                 icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm8 7h-1V4l5 5h-4z"></path></svg>`;
             }
 
-            div.appendChild(icon);
-
-            const text = document.createElement("div");
-            text.className = "text";
-            text.textContent = item;
-            div.appendChild(text);
+            iconDiv.appendChild(icon);
+            iconDiv.appendChild(div`class="${css.text}" textContent="${item}"`);
 
             if (isFolder) {
-                div.classList.add("folder");
-                div.addEventListener("click", async () => {
+                iconDiv.classList.add(css.folder);
+                iconDiv.addEventListener("click", async () => {
                     // `cd ${name} && ls -p`
                     this.history.push(item);
                     let paths = await explorer.dirHandler(item);
                     explorer.render(paths);
                 });
             } else {
-                div.classList.add("file");
-                div.addEventListener("click", async () => {
+                iconDiv.classList.add(css.file);
+                iconDiv.addEventListener("click", async () => {
                     let data = await explorer.fileHandler(item);
                     explorer.#call("file", data, item);
                 });
             }
 
-            this.contents.appendChild(div);
+            this.contents.appendChild(iconDiv);
 
             if (isFolder) {
-                div.style.fontWeight = "bold";
+                iconDiv.style.fontWeight = "bold";
             }
         }
     }
@@ -195,3 +154,88 @@ class Explorer {
         this.events[event].push(cb);
     }
 }
+
+let css = style`
+.holder {
+    background: #fff;
+    width: 100%;
+    height: 100%;
+    overflow-wrap: break-word;
+    overflow-y: auto;
+}
+.explorer {
+    color: #fff;
+    min-height: 390px;
+}
+.files {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0 10px 10px 10px;
+}
+.navBar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 100%;
+    height: 30px;
+    display: flex;
+}
+.file {
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.folder {
+    width: 100px;
+    height: 100px;
+    text-align: center;
+}
+
+.icon {
+    width: 50px;
+    height: 52px;
+    margin: auto;
+}
+
+.text {
+    font-family: sans-serif;
+    color: #cccccc;
+    overflow-wrap: break-word;
+    padding: 10px;
+}
+
+.icon > svg {
+    width: 50px;
+    height: 50px;
+    fill: #9e9e9e;
+}
+
+.forward > svg {
+    height: 25px;
+    fill: #cccccc;
+}
+
+.back > svg {
+    height: 25px;
+    fill: #cccccc;
+}
+
+.fileExplorer {
+    background: #101010;
+}
+.label {
+    width:100%;
+    height:100%;
+    display:block;
+    position:absolute;
+    top:0;
+    left:0;
+}
+`;
+
+let backSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z"></path></svg>`;
+let forwardSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z"></path></svg>`;
