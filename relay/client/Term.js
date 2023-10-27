@@ -87,6 +87,7 @@ export function Term(socket) {
         let collector = "";
         let collect = false;
         channel.on("response", (data) => {
+            console.log(data);
             if (hostname == "" && !ready) {
                 let str = removeANSIEscapeCodes(data.data).match(
                     /[A-Za-z0-9]+\@[A-Za-z0-9]+/i
