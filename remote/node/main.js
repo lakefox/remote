@@ -1,6 +1,7 @@
 import * as os from "node:os";
 import * as pty from "node-pty";
 import "websocket-polyfill";
+import fs from "fs";
 import { Auth } from "../../relay/client/Auth.js";
 
 // ./remote --org=automated --id=1
@@ -44,14 +45,16 @@ function main(args) {
             channel.on("operation", async (data) => {
                 if (data.write) {
                     console.log("WRITE: ", data.name);
-                    await Deno.writeTextFile(data.name, data.data);
+                    fs.writeFile(data.name, data.data);
                 } else if (data.read) {
                     console.log("READ: ", data.data);
-                    let file = await Deno.readTextFile(data.data);
-                    channel.emit("operation", {
-                        read: true,
-                        name: data.data,
-                        data: file,
+                    fs.readFile(data.data, (err, file) => {
+                        if (err) throw err;
+                        channel.emit("operation", {
+                            read: true,
+                            name: data.data,
+                            data: file,
+                        });
                     });
                 }
             });
