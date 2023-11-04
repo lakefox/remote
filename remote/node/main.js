@@ -103,14 +103,3 @@ async function createSession() {
     ptyProcess.write("cd ~ && clear\n");
     return ptyProcess;
 }
-
-function Env(obj) {
-    let vars = [];
-    for (const key in obj) {
-        if (Object.hasOwnProperty.call(obj, key)) {
-            const value = obj[key];
-            vars.push([key, value]);
-        }
-    }
-    return vars;
-}
