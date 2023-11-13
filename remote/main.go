@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -23,6 +24,14 @@ type File struct {
 }
 
 func main() {
+	var org string
+	var id int
+
+	flag.StringVar(&org, "org", "automated", "Enter Your Organization")
+	flag.IntVar(&id, "id", 44324, "Enter a unique ID for this device (used to login)")
+	flag.Parse()
+	fmt.Println(org, id)
+
 	connections := make(map[float64]map[float64]interface{})
 
 	interrupt := make(chan os.Signal, 1)
@@ -34,8 +43,8 @@ func main() {
 		socket.On("open", func(a any) {
 
 			ident := Ident{
-				Org:      "automated",
-				ID:       44324,
+				Org:      org,
+				ID:       id,
 				SocketID: socket.ID,
 			}
 
