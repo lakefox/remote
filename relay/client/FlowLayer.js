@@ -1,5 +1,5 @@
 /**
- * The code defines a JavaScript class called Auth that handles WebSocket communication and allows for
+ * The code defines a JavaScript class called FlowLayer that handles WebSocket communication and allows for
  * event-based messaging and channel creation.
  * @param ws - The `ws` parameter is the WebSocket object that represents the connection to the server.
  * It is used to send and receive messages over the WebSocket connection.
@@ -8,7 +8,7 @@
  * @param connectId - The `connectId` parameter is a unique identifier for the connection. It is used
  * to distinguish between different connections on the websocket.
  */
-export class Auth {
+export class FlowLayer {
     #call(event, ...args) {
         if (this.events[event]) {
             for (let i = 0; i < this.events[event].length; i++) {

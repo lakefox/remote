@@ -6,7 +6,9 @@ export function CodeEditor(manager, desktop) {
                 await exInt.run(`cd ${pwd}`);
             }
             let base = await exInt.run(`pwd`);
+            console.log(base);
             base = base.trim();
+            console.log(base);
             exInt.run("ls -p -R").then((a) => {
                 let files = fileParser(a, base);
                 console.log(files);

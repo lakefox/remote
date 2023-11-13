@@ -1,5 +1,5 @@
 import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
-import { Auth } from "./client/Auth.js";
+import { FlowLayer } from "./client/FlowLayer.js";
 
 const srcDir = "./client";
 
@@ -25,7 +25,7 @@ router.get("/wss", (ctx) => {
     const ws = ctx.upgrade();
     console.log("Request Upgraded");
 
-    let io = new Auth(ws, true);
+    let io = new FlowLayer(ws, true);
 
     io.on("open", (socket) => {
         let subscribedTo;
@@ -33,10 +33,12 @@ router.get("/wss", (ctx) => {
         connections[socket.id] = socket;
 
         socket.on("subscribe", (data) => {
-            console.log("Subscribing");
+            console.log("Subscribing", mappedConnections);
             if (mappedConnections[data.org]) {
                 let id = mappedConnections[data.org][data.id];
+                console.log(id);
                 if (id) {
+                    console.log(connections);
                     if (connections[id]) {
                         subscribedTo = id;
                         console.log(
@@ -48,6 +50,7 @@ router.get("/wss", (ctx) => {
         });
 
         socket.on("ident", (data) => {
+            console.log("Start ident");
             if (mappedConnections[data.org] === undefined) {
                 mappedConnections[data.org] = {};
             }
@@ -56,10 +59,11 @@ router.get("/wss", (ctx) => {
         });
 
         socket.on("channel", (channel) => {
-            console.log("Channel Created");
+            console.log("Channel Created", subscribedTo);
             if (subscribedTo) {
                 if (connections[subscribedTo]) {
                     let pipeTo = connections[subscribedTo].createChannel();
+                    console.log(subscribedTo, "making channel");
                     pipeTo.on("close", () => {
                         channel.close();
                     });

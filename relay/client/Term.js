@@ -58,7 +58,7 @@ export function Term(socket) {
         term.onData((e) => {
             channel.emit("command", { data: e });
         });
-        channel.on("response", ({ data }) => {
+        channel.on("response", (data) => {
             term.write(data);
         });
         return el;
@@ -89,7 +89,7 @@ export function Term(socket) {
         channel.on("response", (data) => {
             console.log(data);
             if (hostname == "" && !ready) {
-                let str = removeANSIEscapeCodes(data.data).match(
+                let str = removeANSIEscapeCodes(data).match(
                     /[A-Za-z0-9]+\@[A-Za-z0-9]+/i
                 );
                 if (str != null) {
@@ -102,9 +102,9 @@ export function Term(socket) {
             } else if (hostname != "" && ready) {
                 if (commandSent) {
                     if (collect) {
-                        collector += removeANSIEscapeCodes(data.data);
+                        collector += removeANSIEscapeCodes(data);
                     }
-                    if (data.data.indexOf("[?2004") != -1) {
+                    if (data.indexOf("[?2004") != -1) {
                         if (collect) {
                             collect = false;
                             let hN = collector.indexOf(hostname);
@@ -165,7 +165,7 @@ export function Term(socket) {
     function removeANSIEscapeCodes(inputString) {
         // Regular expression to match ANSI escape codes
         const ansiEscapeCodeRegex = /(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]/g;
-
+        console.log(inputString);
         // Replace ANSI escape codes with an empty string
         return inputString.replace(ansiEscapeCodeRegex, "");
     }

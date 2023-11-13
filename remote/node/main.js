@@ -3,13 +3,13 @@ import * as pty from "node-pty";
 import "dotenv/config";
 import "websocket-polyfill";
 import fs from "fs";
-import { Auth } from "../../relay/client/Auth.js";
+import { FlowLayer } from "../../relay/client/FlowLayer.js";
 
 // ./remote --org=automated --id=1
 
 function main(args) {
     const ws = new WebSocket("wss://ws.lakefox.net/wss");
-    let io = new Auth(ws);
+    let io = new FlowLayer(ws);
     console.log("Socket is up and running...");
 
     io.on("open", (socket) => {

@@ -1,13 +1,13 @@
 import os from "https://deno.land/std@0.123.0/node/os.ts";
 import { parse } from "https://deno.land/std@0.204.0/flags/mod.ts";
 import { Pty } from "https://deno.land/x/deno_pty_ffi@0.15.1/mod.ts";
-import { Auth } from "../relay/client/Auth.js";
+import { FlowLayer } from "../relay/client/FlowLayer.js";
 
 // ./remote --org=automated --id=1
 
 function main(args) {
     const ws = new WebSocket("wss://ws.lakefox.net/wss");
-    let io = new Auth(ws);
+    let io = new FlowLayer(ws);
     console.log("Socket is up and running...");
 
     io.on("open", (socket) => {

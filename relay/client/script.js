@@ -1,4 +1,4 @@
-import { Auth } from "./Auth.js";
+import { FlowLayer } from "./FlowLayer.js";
 import { FileExplorer } from "./Explorer.js";
 import { InputDialog } from "./InputDialog.js";
 import { CodeEditor } from "./CodeEditor.js";
@@ -7,8 +7,8 @@ import { Term } from "./Term.js";
 
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
-let ws = new WebSocket("wss://ws.lakefox.net/wss");
-const io = new Auth(ws);
+let ws = new WebSocket("ws://localhost:2134/wss");
+const io = new FlowLayer(ws);
 
 io.on("open", (socket) => {
     console.log(socket.id);
