@@ -1,4 +1,4 @@
-import { div, button, input, style } from "./html.js";
+import { div, button, input, style } from "../html.js";
 
 export class InputDialog {
     constructor() {

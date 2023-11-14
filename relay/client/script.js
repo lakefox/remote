@@ -1,10 +1,10 @@
 import { FlowLayer } from "./FlowLayer.js";
-import { Folder } from "./Folder.js";
-import { InputDialog } from "./InputDialog.js";
-import { Editor } from "./Editor.js";
-import { TextEditor } from "./TextEditor.js";
+import { Folder } from "./explorer/Folder.js";
+import { InputDialog } from "./login/InputDialog.js";
+import { Editor } from "./editor/Editor.js";
+import { TextEditor } from "./editor/TextEditor.js";
 import { Desktop } from "./Desktop.js";
-import { Term } from "./Term.js";
+import { Term } from "./terminal/Term.js";
 
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);

@@ -1,4 +1,4 @@
-import { select, option, style } from "./html.js";
+import { select, option, style } from "../html.js";
 
 export class DeviceTable {
     constructor(devices) {

@@ -1,4 +1,4 @@
-import { div, Fmt, h2, State, style } from "./html.js";
+import { div, Fmt, h2, State, style } from "../html.js";
 // import { Search } from "../search/search.js";
 
 export class Folder {

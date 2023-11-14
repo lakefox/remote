@@ -1,4 +1,4 @@
-import { Fmt, State, div, input, style, ul } from "./html.js";
+import { Fmt, State, div, input, style, ul } from "../html.js";
 import { TextEditor } from "./TextEditor.js";
 
 let { val, listen, f, Global } = new State();
@@ -64,8 +64,8 @@ function generateFileSelector(container, structure, read, basePath = "") {
             // Treat as a folder
             listItem.classList.add(css.folder);
             let h = (e) => {
-                if (name == e.target.childNodes[1].nodeValue) {
-                    if (e.target.classList.contains(css.folder)) {
+                if (e.target.classList.contains(css.folder)) {
+                    if (name == e.target.childNodes[1].nodeValue) {
                         toggleFolder(e.target);
                     }
                 }

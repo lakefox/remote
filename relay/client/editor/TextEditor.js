@@ -1,4 +1,4 @@
-import { div, style } from "./html.js";
+import { div, style } from "../html.js";
 import { extMap } from "./fileTools.js";
 
 export class TextEditor {
