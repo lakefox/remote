@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 
 	"server/src/flowlayer"
 	"server/src/terminal"
@@ -23,12 +24,20 @@ type File struct {
 	Data string `json:"data"`
 }
 
+type File2 struct {
+	Data string `json:"data"`
+	Path string `json:"path"`
+}
+
 func main() {
 	var org string
+	var mount string
 	var id int
+	cwd, _ := os.Getwd()
 
 	flag.StringVar(&org, "org", "automated", "Enter Your Organization")
 	flag.IntVar(&id, "id", 44324, "Enter a unique ID for this device (used to login)")
+	flag.StringVar(&mount, "mount", cwd, "Enter directory to mount to")
 	flag.Parse()
 	fmt.Println(org, id)
 
@@ -53,13 +62,12 @@ func main() {
 			socket.On("channel", func(c any) {
 				fmt.Println("channel")
 				channel := c.(flowlayer.Channel)
+
+				// terminal
+
 				channel.On("session", func(a any) {
 					fmt.Println("Session", channel.ID)
-					inter := terminal.Terminal()
-
-					inter.In <- `setopt PROMPT_CR && setopt PROMPT_SP && export PROMPT_EOL_MARK=""`
-					inter.In <- "\n"
-					inter.In <- "clear\n"
+					inter := terminal.Terminal(mount)
 
 					go func() {
 						// Receive and print output from the terminal
@@ -90,10 +98,11 @@ func main() {
 					term.Resize(data["cols"].(float64), data["rows"].(float64))
 				})
 
+				// Editor
+
 				channel.On("operation", func(a any) {
 					raw := a.(map[string]interface{})
 					data := raw["data"].(map[string]interface{})
-					fmt.Println(data)
 					_, write := data["write"]
 					_, read := data["read"]
 					if write {
@@ -117,6 +126,44 @@ func main() {
 
 					}
 				})
+
+				// Explorer
+
+				channel.On("files", func(data any) {
+					files := listFilesInDirectory(mount)
+					channel.Emit("files", files)
+				})
+				channel.On("dir", func(a any) {
+					raw := a.(map[string]interface{})
+					data := raw["data"].(string)
+					files := listFilesInDirectory(data)
+					channel.Emit("dir", files)
+				})
+				channel.On("read", func(data any) {
+					d := data.(map[string]interface{})
+					fmt.Println(d["data"])
+					filePath := d["data"].(string)
+					dat, err := os.ReadFile(filePath)
+					check(err)
+
+					file := File2{
+						Data: string(dat),
+						Path: filePath,
+					}
+
+					channel.Emit("read", file)
+				})
+
+				channel.On("write", func(a any) {
+					raw := a.(map[string]interface{})
+					data := raw["data"].(map[string]interface{})
+					err := os.WriteFile(data["name"].(string), data["data"].([]byte), 0777)
+					// handle this error
+					if err != nil {
+						// print it out
+						fmt.Println(err)
+					}
+				})
 			})
 
 		})
@@ -126,4 +173,30 @@ func main() {
 	log.Println("WebSocket client started. Press Ctrl+C to exit.")
 	<-interrupt
 
+}
+
+func listFilesInDirectory(dirPath string) []string {
+	var files = []string{}
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		check(err)
+
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error walking the directory:", err)
+	}
+
+	return files
+}
+
+func check(e error) {
+	if e != nil {
+		fmt.Println(e)
+		panic(e)
+	}
 }

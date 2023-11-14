@@ -1,12 +1,14 @@
 import { FlowLayer } from "./FlowLayer.js";
-import { FileExplorer } from "./Explorer.js";
+import { Folder } from "./Folder.js";
 import { InputDialog } from "./InputDialog.js";
-import { CodeEditor } from "./CodeEditor.js";
+import { Editor } from "./Editor.js";
+import { TextEditor } from "./TextEditor.js";
 import { Desktop } from "./Desktop.js";
 import { Term } from "./Term.js";
 
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
+
 let ws = new WebSocket("ws://localhost:2134/wss");
 const io = new FlowLayer(ws);
 
@@ -14,8 +16,6 @@ io.on("open", (socket) => {
     console.log(socket.id);
     let manager = new Term(socket);
     const inputDialog = new InputDialog();
-    let explorer = new FileExplorer(manager, desktop);
-    let codeEditor = new CodeEditor(manager, desktop);
 
     // Example usage
     inputDialog
@@ -42,10 +42,49 @@ io.on("open", (socket) => {
     });
 
     document.querySelector("#newExplorer").addEventListener("click", () => {
-        explorer.new();
+        let folder = new Folder();
+        console.log(folder);
+        let folderC = socket.createChannel();
+        folder.on("load", (data) => {
+            console.log(data);
+            folderC.emit("read", data);
+        });
+
+        folderC.on("read", (data) => {
+            console.log(data);
+            let view = new TextEditor();
+            desktop.new(view.html, data.path);
+
+            view.init();
+            view.load(data.path.split(".").at(-1), data.data);
+        });
+
+        let c = socket.createChannel();
+        c.emit("files");
+        c.on("files", (files) => {
+            folder.val("files", files);
+        });
+        desktop.new(folder.val("cont"));
     });
 
     document.querySelector("#newCode").addEventListener("click", () => {
-        codeEditor.new();
+        let editor = new Editor(desktop);
+        let ch = socket.createChannel();
+        editor.reader((file) => {
+            return new Promise((resolve, reject) => {
+                let ch2 = socket.createChannel();
+                console.log(file);
+                ch2.emit("read", file);
+                ch2.on("read", ({ data }) => {
+                    resolve(data);
+                });
+            });
+        });
+        ch.emit("dir", "/Users/masonwright/Desktop/term/relay");
+        ch.on("dir", (data) => {
+            editor.load(data);
+            ch.close();
+        });
+        desktop.new(editor.html, "Editor");
     });
 });

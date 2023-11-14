@@ -116,6 +116,31 @@ export let style = function () {
     return newCSS.classMap;
 };
 
+export let Fmt = function (strings, ...values) {
+    const elements = strings.map((e, i) => {
+        return { el: values[i], depth: e.length };
+    });
+
+    const stack = [elements[0]];
+
+    for (let i = 1; i < elements.length; i++) {
+        const { el, depth } = elements[i];
+
+        if (el == undefined) {
+            break;
+        }
+
+        while (stack.length > 1 && depth <= stack[stack.length - 1].depth) {
+            stack.pop();
+        }
+
+        stack[stack.length - 1].el.appendChild(el);
+        stack.push({ depth, el });
+    }
+
+    return values[0];
+};
+
 function tempToDOM(type) {
     return function () {
         let el = document.createElement(type);
@@ -132,7 +157,6 @@ function tempToDOM(type) {
 }
 function parseHTMLProperties(template, ...values) {
     const properties = {};
-
     const templateString = template.reduce((acc, part, i) => {
         const value = values[i];
         if (typeof value === "string") {
@@ -140,7 +164,7 @@ function parseHTMLProperties(template, ...values) {
         } else {
             // If the value is not a string, treat it as a property name
             const propName = value;
-            if (propName) {
+            if (propName !== undefined) {
                 acc += part + `${propName}`;
             } else {
                 acc += part;
@@ -148,14 +172,13 @@ function parseHTMLProperties(template, ...values) {
         }
         return acc;
     }, "");
-
     // Regular expression to match attribute="value" or attribute='value' or attribute
-    const attributeRegex = /(\w+)(?:=(?:"([^"]*)"|'([^']*)'))?/g;
-
+    const attributeRegex = /([\w-]+)(?:=(?:"([^"]*)"|'([^']*)'))?/g;
     templateString.replace(
         attributeRegex,
         (match, name, doubleQuotedValue, singleQuotedValue) => {
             const value = doubleQuotedValue || singleQuotedValue || true;
+
             properties[name] = value;
         }
     );
@@ -190,7 +213,7 @@ function generateRandomHash(length) {
 function renameCSSClasses(css) {
     const classMap = {};
     const cssWithModifiedClasses = css.replace(
-        /(\.|#)([\w-]+(?![^{}]*\}))/g,
+        /(\.)([\w-]+(?![^{}]*\}))/g,
         (match, selectorType, selectorName) => {
             if (selectorType === "." || selectorType === "#") {
                 if (!classMap[selectorName]) {
@@ -211,63 +234,159 @@ function renameCSSClasses(css) {
     };
 }
 
-export function State(v) {
-    let context = {};
-    let dependencies = {};
-    let renders = {};
-    this.f = async (render = () => {}) => {
-        let name = `f${Object.keys(renders).length}`;
-        renders[name] = render;
-        try {
-            await run(render, name, context);
-        } catch (error) {
-            // this doesn't need to do anything
-        }
-    };
-    this.define = (name, element) => {
-        context[name] = element;
-    };
-    this.listen = (name, event, handler) => {
-        context[name].addEventListener(event, async () => {
-            let ctx = context;
-            ctx.parent = context[name];
-            await run(handler, name, ctx, dependencies);
-        });
-    };
-    async function run(func, name, context) {
-        let require = {};
-        for (const key in context) {
-            if (Object.hasOwnProperty.call(context, key)) {
-                Object.defineProperty(require, key, {
-                    get() {
-                        if (dependencies[key] == undefined) {
-                            dependencies[key] = [];
-                        }
-                        if (dependencies[key].indexOf(name) == -1) {
-                            dependencies[key].push(name);
-                        }
-                        return context[key];
-                    },
+export class State {
+    constructor() {
+        let auth = false;
+        let context = {};
+        let dependencies = {};
+        let renders = {};
+        this.f = async (render = () => {}) => {
+            let name = `f${Object.keys(renders).length}`;
+            renders[name] = render;
+            try {
+                await run(render, name, context);
+            } catch (error) {
+                // console.error(error);
+            }
+        };
+        this.listen = (name, ...events) => {
+            let handler = events.at(-1);
+            for (let i = 0; i < events.length - 1; i++) {
+                const event = events[i];
+                context[name].addEventListener(event, async () => {
+                    let ctx = context;
+                    ctx.parent = context[name];
+                    await run(handler, name, ctx);
                 });
             }
-        }
-        let data = func(require);
-        if (typeof data?.then === "function") {
-            data = await data;
-        }
-        Object.assign(context, data);
-        for (const key in dependencies) {
-            if (Object.hasOwnProperty.call(dependencies, key)) {
-                for (let i = 0; i < dependencies[key].length; i++) {
-                    if (
-                        renders[dependencies[key][i]] &&
-                        dependencies[key][i] != name
-                    ) {
-                        console.log(name, key, dependencies[key][i]);
-                        renders[dependencies[key][i]](context);
+        };
+        this.val = (name, value) => {
+            if (value === undefined && name === undefined) {
+                return context;
+            } else if (value === undefined && typeof name == "string") {
+                return context[name];
+            } else if (typeof name == "object") {
+                for (const key in name) {
+                    context[key] = name[key];
+                    if (dependencies[key]) {
+                        for (let i = 0; i < dependencies[key].length; i++) {
+                            let render = renders[dependencies[key][i]];
+                            if (render) {
+                                render(context);
+                            }
+                        }
+                    }
+                }
+                if (auth) {
+                    console.log(context);
+                    auth.ch.emit(auth.type, serialize(context));
+                }
+            } else {
+                context[name] = value;
+                if (dependencies[name]) {
+                    for (let i = 0; i < dependencies[name].length; i++) {
+                        let render = renders[dependencies[name][i]];
+                        if (render) {
+                            render(context);
+                        }
+                    }
+                }
+                if (auth) {
+                    console.log(context);
+                    auth.ch.emit(auth.type, serialize(context));
+                }
+            }
+        };
+        this.mount = (type, ch, restore = false) => {
+            auth = { type, ch };
+            if (restore) {
+                ch.emit(type);
+                ch.on(type, async (data) => {
+                    console.log(type, data);
+                    if (data != null) {
+                        console.log("not null");
+                        context = unSerialize(data);
+                        // Load the data and render the current state
+                        for (const key in context) {
+                            for (const r in renders) {
+                                await run(renders[r], key, context);
+                            }
+                        }
+                    }
+                });
+            }
+        };
+        let state = this;
+        this.Global = class {
+            constructor() {
+                let events = {};
+                let catchAll = () => {};
+                this.call = (event, ...args) => {
+                    if (events[event]) {
+                        for (let i = 0; i < events[event].length; i++) {
+                            events[event][i](...args);
+                        }
+                    } else {
+                        catchAll(event, ...args);
+                    }
+                };
+                this.val = state.val;
+                this.listen = state.listen;
+                this.f = state.f;
+                this.mount = state.mount;
+                this.on = (event, cb) => {
+                    if (!events[event]) {
+                        events[event] = [];
+                    }
+                    events[event].push(cb);
+                };
+                this.catch = (cA) => {
+                    catchAll = cA;
+                };
+            }
+        };
+        async function run(func, name, context) {
+            let require = {};
+            for (const key in context) {
+                if (Object.hasOwnProperty.call(context, key)) {
+                    Object.defineProperty(require, key, {
+                        get() {
+                            if (dependencies[key] == undefined) {
+                                dependencies[key] = [];
+                            }
+                            if (dependencies[key].indexOf(name) == -1) {
+                                dependencies[key].push(name);
+                            }
+                            return context[key];
+                        },
+                    });
+                }
+            }
+            let data = func(require);
+            if (typeof data?.then === "function") {
+                data = await data;
+            }
+            Object.assign(context, data);
+            for (const key in dependencies) {
+                if (Object.hasOwnProperty.call(dependencies, key)) {
+                    for (let i = 0; i < dependencies[key].length; i++) {
+                        if (
+                            renders[dependencies[key][i]] &&
+                            dependencies[key][i] != name
+                        ) {
+                            renders[dependencies[key][i]](context);
+                        }
                     }
                 }
             }
         }
     }
+}
+
+function SQP(name, state) {
+    state.f((e) => {
+        for (const key in e) {
+            //
+        }
+    });
 }

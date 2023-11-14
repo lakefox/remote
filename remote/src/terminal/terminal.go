@@ -16,7 +16,7 @@ import (
 func getShellCommand() string {
 	switch runtime.GOOS {
 	case "darwin":
-		return "/bin/zsh"
+		return `/bin/zsh`
 	case "linux":
 		return "/bin/bash"
 	case "windows":
@@ -33,7 +33,7 @@ type Output struct {
 	Pty *os.File
 }
 
-func Terminal() Output {
+func Terminal(dir string) Output {
 	ptmx, tty, err := pty.Open()
 	if err != nil {
 		fmt.Println("Error opening PTY:", err)
@@ -110,6 +110,9 @@ func Terminal() Output {
 			}
 		}
 	}()
+
+	inputCh <- "cd " + dir + "\n"
+	inputCh <- "setopt PROMPT_CR && setopt PROMPT_SP && export PROMPT_EOL_MARK=\"\" && clear\n"
 
 	// Wait for the command to complete before closing channels
 	go func() {

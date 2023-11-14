@@ -83,6 +83,7 @@ body {
     font-size: 34px;
     color: antiquewhite;
     cursor: pointer;
+    max-width: 90%;
 }
 
 #tabs {
@@ -175,4 +176,23 @@ li.expanded > ul {
 
 .fileTag:hover {
     background: #f0f8ff3b;
+}
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #333;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #555;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #777;
 }

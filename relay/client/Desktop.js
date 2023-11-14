@@ -1,13 +1,12 @@
 export function Desktop(main) {
     let windows = [];
     let minimised = [];
-    this.new = function (el, className) {
+    this.new = function (el, title = "Window") {
         let app = new DesktopWindow(
             main,
-            `Window ${windows.length}`,
+            title,
             100 + windows.length * 40,
-            100 + windows.length * 40,
-            className
+            100 + windows.length * 40
         );
         app.on("close", () => {
             const index = windows.indexOf(app);
@@ -93,18 +92,22 @@ class DesktopWindow {
             }
         }
     }
-    constructor(container, title, x, y, className) {
+    constructor(container, title, x, y) {
         this.container = container;
         this.events = {};
 
         this.window = document.createElement("div");
         this.window.className = "window";
-        if (className) {
-            this.window.classList.add(className);
-        }
         this.window.style.left = x + "px";
         this.window.style.top = y + "px";
         this.window.style.height = "400px";
+        this.window.style.boxShadow = `0.0145rem 0.029rem 0.174rem rgba(0, 0, 0, 0.01698),
+        0.0335rem 0.067rem 0.402rem rgba(0, 0, 0, 0.024),
+        0.0625rem 0.125rem 0.75rem rgba(0, 0, 0, 0.03),
+        0.1125rem 0.225rem 1.35rem rgba(0, 0, 0, 0.036),
+        0.2085rem 0.417rem 2.502rem rgba(0, 0, 0, 0.04302),
+        0.5rem 1rem 6rem rgba(0, 0, 0, 0.06),
+        0 0 0 0.0625rem rgba(0, 0, 0, 0.015)`;
         this.window.addEventListener("click", (e) => {
             this.#call("click", e);
         });
