@@ -47,21 +47,17 @@ io.on("open", (socket) => {
         let folderC = socket.createChannel();
         folder.on("load", (data) => {
             console.log(data);
-            folderC.emit("read", data);
+            socket.fetch("read", data).then((a) => {
+                console.log(a);
+                let view = new TextEditor();
+                desktop.new(view.html, a.path);
+
+                view.init();
+                view.load(a.path.split(".").at(-1), a.data);
+            });
         });
 
-        folderC.on("read", (data) => {
-            console.log(data);
-            let view = new TextEditor();
-            desktop.new(view.html, data.path);
-
-            view.init();
-            view.load(data.path.split(".").at(-1), data.data);
-        });
-
-        let c = socket.createChannel();
-        c.emit("files");
-        c.on("files", (files) => {
+        socket.fetch("files").then((files) => {
             folder.val("files", files);
         });
         desktop.new(folder.val("cont"));
@@ -69,22 +65,18 @@ io.on("open", (socket) => {
 
     document.querySelector("#newCode").addEventListener("click", () => {
         let editor = new Editor(desktop);
-        let ch = socket.createChannel();
         editor.reader((file) => {
             return new Promise((resolve, reject) => {
-                let ch2 = socket.createChannel();
-                console.log(file);
-                ch2.emit("read", file);
-                ch2.on("read", ({ data }) => {
+                socket.fetch("read", file).then(({ data }) => {
                     resolve(data);
                 });
             });
         });
-        ch.emit("dir", "/Users/masonwright/Desktop/term/relay");
-        ch.on("dir", (data) => {
-            editor.load(data);
-            ch.close();
-        });
+        socket
+            .fetch("dir", "/Users/masonwright/Desktop/term/relay")
+            .then((data) => {
+                editor.load(data);
+            });
         desktop.new(editor.html, "Editor");
     });
 });

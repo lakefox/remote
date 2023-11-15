@@ -44,6 +44,17 @@ router.get("/wss", (ctx) => {
                         console.log(
                             `${socket.id} sub'd to #${data.id} at ${data.org}`
                         );
+                        // Add Fetch proxing
+                        socket.route("*", (event, data) => {
+                            console.log("Fetching: ", event);
+                            return new Promise((resolve, reject) => {
+                                connections[subscribedTo]
+                                    .fetch(event, data)
+                                    .then((res) => {
+                                        resolve(res);
+                                    });
+                            });
+                        });
                     }
                 }
             }

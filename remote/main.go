@@ -49,6 +49,38 @@ func main() {
 	go func() {
 		socket := flowlayer.Connect("ws://localhost:2134/wss")
 
+		socket.Route("files", func(a any) any {
+			return listFilesInDirectory(mount)
+		})
+
+		socket.Route("dir", func(a any) any {
+			return listFilesInDirectory(a.(string))
+		})
+
+		socket.Route("read", func(data any) any {
+			dat, err := os.ReadFile(data.(string))
+			check(err)
+
+			file := File2{
+				Data: string(dat),
+				Path: data.(string),
+			}
+
+			return file
+		})
+
+		socket.Route("write", func(a any) any {
+			raw := a.(map[string]interface{})
+			data := raw["data"].(map[string]interface{})
+			err := os.WriteFile(data["name"].(string), data["data"].([]byte), 0777)
+			// handle this error
+			if err != nil {
+				// print it out
+				fmt.Println(err)
+			}
+			return nil
+		})
+
 		socket.On("open", func(a any) {
 
 			ident := Ident{
@@ -124,44 +156,6 @@ func main() {
 						}
 						channel.Emit("operation", f)
 
-					}
-				})
-
-				// Explorer
-
-				channel.On("files", func(data any) {
-					files := listFilesInDirectory(mount)
-					channel.Emit("files", files)
-				})
-				channel.On("dir", func(a any) {
-					raw := a.(map[string]interface{})
-					data := raw["data"].(string)
-					files := listFilesInDirectory(data)
-					channel.Emit("dir", files)
-				})
-				channel.On("read", func(data any) {
-					d := data.(map[string]interface{})
-					fmt.Println(d["data"])
-					filePath := d["data"].(string)
-					dat, err := os.ReadFile(filePath)
-					check(err)
-
-					file := File2{
-						Data: string(dat),
-						Path: filePath,
-					}
-
-					channel.Emit("read", file)
-				})
-
-				channel.On("write", func(a any) {
-					raw := a.(map[string]interface{})
-					data := raw["data"].(map[string]interface{})
-					err := os.WriteFile(data["name"].(string), data["data"].([]byte), 0777)
-					// handle this error
-					if err != nil {
-						// print it out
-						fmt.Println(err)
 					}
 				})
 			})

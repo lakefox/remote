@@ -36,6 +36,7 @@ type Socket struct {
 	Write     chan string
 	Callbacks map[string]func(any)
 	Channels  map[float64]Channel
+	Routes    map[string]func(any) any
 }
 
 // <----------------------------------------------------------------------------------------------> //
@@ -65,6 +66,7 @@ func auth(conn *websocket.Conn) *Socket {
 	writeC := make(chan string)
 	callbacks := make(map[string]func(any))
 	channels := make(map[float64]Channel)
+	routes := make(map[string]func(any) any)
 
 	user := Socket{
 		ToID:      connId,
@@ -72,6 +74,7 @@ func auth(conn *websocket.Conn) *Socket {
 		Write:     writeC,
 		Callbacks: callbacks,
 		Channels:  channels,
+		Routes:    routes,
 	}
 
 	go func() {
@@ -173,6 +176,31 @@ func handleMessage(user *Socket, data map[string]interface{}) *Event {
 			if e {
 				rt.Channel = ch.(float64)
 			}
+
+		} else if data["type"] == "fetch" && data["status"] != nil {
+			if data["status"].(float64) == 0 {
+				g := data["data"].(map[string]interface{})
+				out := user.Routes[g["type"].(string)](g["data"])
+				d := DATA{
+					Type: g["type"].(string),
+					Data: out,
+				}
+
+				msg := FETCH{
+					Type:   "fetch",
+					ID:     user.ToID,
+					Status: 1,
+					Index:  data["index"].(float64),
+					Data:   d,
+				}
+
+				jsonData, err := json.Marshal(msg)
+				if err != nil {
+					fmt.Println("JSON marshaling error:", err)
+				}
+				user.Write <- string(jsonData)
+			}
+
 		} else if data["type"] == "open" {
 			// If the channel is defined then create a channel with that id else create a new socket or "user"
 			if data["channel"] != nil {
@@ -198,6 +226,14 @@ func handleMessage(user *Socket, data map[string]interface{}) *Event {
 }
 
 // <----------------------------------------------------------------------------------------------> //
+
+type FETCH struct {
+	Type   string  `json:"type"`
+	ID     float64 `json:"id"`
+	Status float64 `json:"status"`
+	Index  float64 `json:"index"`
+	Data   DATA    `json:"data"`
+}
 
 type DATA struct {
 	Type string `json:"type"`
@@ -270,6 +306,14 @@ func (e *Socket) CreateChannel() {
 		return
 	}
 	e.Write <- string(jsonData)
+}
+
+func (e *Socket) Route(event string, callback func(any) any) {
+	_, exists := e.Routes[event]
+
+	if !exists {
+		e.Routes[event] = callback
+	}
 }
 
 func (e *Socket) On(event string, callback func(any)) {
