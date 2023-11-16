@@ -164,7 +164,7 @@ func main() {
 
 	}()
 	// Keep Alive
-	log.Println("WebSocket client started. Press Ctrl+C to exit.")
+	log.Println("Remote session started. Press Ctrl+C to exit.")
 	<-interrupt
 
 }

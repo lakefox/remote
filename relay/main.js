@@ -1,5 +1,18 @@
 import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
 import { FlowLayer } from "./client/FlowLayer.js";
+import { DB } from "https://deno.land/x/sqlite/mod.ts";
+import { sha256 } from "https://denopkg.com/chiefbiiko/sha256@v1.0.0/mod.ts";
+
+const db = new DB("./relay.db");
+
+db.execute(`
+    CREATE TABLE IF NOT EXISTS accounts (
+        id TEXT PRIMARY KEY,
+        password TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`);
 
 const srcDir = "./client";
 
@@ -31,6 +44,50 @@ router.get("/wss", (ctx) => {
         let subscribedTo;
         console.log("Opened: ", socket.id);
         connections[socket.id] = socket;
+
+        socket.route("create-account", ({ email, password }) => {
+            let pwd_hash = sha256(password, "utf8", "hex");
+            console.log(pwd_hash);
+            // Generate a random alphanumeric string of length 10
+            let id = db.query(`SELECT id FROM accounts WHERE email = (?) `, [
+                email,
+            ]);
+            console.log(id);
+            if (id.length == 0) {
+                id = makeid(10);
+                db.execute(
+                    `INSERT INTO accounts (id, password, email) VALUES ('${id}', '${pwd_hash}', '${email}')`
+                );
+                return {
+                    error: false,
+                    id: id[0][0],
+                };
+            } else {
+                return {
+                    error: true,
+                    id: null,
+                };
+            }
+        });
+
+        socket.route("login", ({ email, password }) => {
+            let pwd_hash = sha256(password, "utf8", "hex");
+            let id = db.query(
+                `SELECT id FROM accounts WHERE email = ('${email}') AND password = ('${pwd_hash}') `
+            );
+
+            if (id.length > 0) {
+                return {
+                    error: false,
+                    id: id[0][0],
+                };
+            } else {
+                return {
+                    error: true,
+                    id: null,
+                };
+            }
+        });
 
         socket.on("subscribe", (data) => {
             console.log("Subscribing", mappedConnections);
@@ -127,5 +184,20 @@ app.use(async (ctx) => {
         }
     }
 });
+
+function makeid(length) {
+    let result = "";
+    const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+        result += characters.charAt(
+            Math.floor(Math.random() * charactersLength)
+        );
+        counter += 1;
+    }
+    return result;
+}
 
 await app.listen({ port: 2134 });

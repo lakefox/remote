@@ -2,22 +2,19 @@ import { div, button, input, style } from "../html.js";
 
 export class InputDialog {
     constructor() {
-        this.dialog = div`class="${inputdialog}" style="display: none;"`;
-        this.inputContainer = div`class="${inputcontainer}"`;
-
-        this.prompt = div`class="${inputprompt}"`;
-        this.inputContainer.appendChild(this.prompt);
+        this.dialog = div`class="${css.inputdialog}" style="display: none;"`;
+        this.container = div`class="${css.container}"`;
+        this.inputContainer = div`class="${css.inputContainer}"`;
+        this.buttonContainer = div``;
+        this.inputs = [];
+        this.prompt = div`class="${css.inputprompt}"`;
+        this.container.appendChild(this.prompt);
 
         this.input = input`type="text"`;
-        this.input.addEventListener("keydown", (e) => {
-            if (e.key == "Enter") {
-                this.handleOKClick();
-            }
-        });
         this.inputContainer.appendChild(this.input);
 
-        this.buttons = div`class="${inputbuttons}"`;
-        this.inputContainer.appendChild(this.buttons);
+        this.buttons = div`class="${css.inputbuttons}"`;
+        this.buttonContainer.appendChild(this.buttons);
 
         this.okButton = button`textContent="OK"`;
         this.okButton.addEventListener("click", () => this.handleOKClick());
@@ -29,24 +26,41 @@ export class InputDialog {
         );
         this.buttons.appendChild(this.cancelButton);
 
-        this.dialog.appendChild(this.inputContainer);
+        this.container.appendChild(this.inputContainer);
+        this.container.appendChild(this.buttonContainer);
+        this.dialog.appendChild(this.container);
         document.body.appendChild(this.dialog);
     }
 
-    async promptUser(promptText, initialValue = "") {
+    async promptUser(promptText, inputDescriptions = []) {
+        let self = this;
         return new Promise((resolve, reject) => {
-            this.resolveCallback = resolve;
-            this.rejectCallback = reject;
+            self.resolveCallback = resolve;
+            self.rejectCallback = reject;
+            self.inputs = [];
+            self.prompt.textContent = promptText;
+            self.inputContainer.innerHTML = "";
 
-            this.prompt.textContent = promptText;
-            this.input.value = initialValue;
+            // Create input fields based on the inputDescriptions array
+            inputDescriptions.map((inputDesc) => {
+                const inputElement = input`type="${inputDesc.type || "text"}"`;
+                inputElement.placeholder = inputDesc.placeholder || "";
+                inputElement.addEventListener("keydown", (e) => {
+                    if (e.key == "Enter") {
+                        self.handleOKClick();
+                    }
+                });
+                self.inputs.push(inputElement);
+                self.inputContainer.appendChild(inputElement);
+                return inputElement;
+            });
 
-            this.showDialog();
+            self.showDialog();
         });
     }
 
     handleOKClick() {
-        const userInput = this.input.value;
+        const userInput = this.inputs.map((e) => e.value);
         this.hideDialog();
         this.resolveCallback(userInput);
     }
@@ -66,14 +80,14 @@ export class InputDialog {
     }
 }
 
-let { inputdialog, inputcontainer, inputprompt, inputbuttons } = style`
+let css = style`
 .inputdialog {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -127,7 +141,7 @@ a .inputbuttons {
     outline: none;
 }
 
-.inputcontainer {
+.container {
     background: #13111c;
     width: 500px;
     height: 300px;
@@ -144,4 +158,9 @@ a .inputbuttons {
         0.5rem 1rem 6rem rgba(0, 0, 0, 0.06),
         0 0 0 0.0625rem rgba(0, 0, 0, 0.015);
 }
+.inputContainer {
+    display: flex;
+    flex-direction: column;
+}
 `;
+console.log(css);

@@ -5,12 +5,16 @@ import { Editor } from "./editor/Editor.js";
 import { TextEditor } from "./editor/TextEditor.js";
 import { Desktop } from "./Desktop.js";
 import { Term } from "./terminal/Term.js";
+import { Pannel } from "./editor/Pannel.js";
 
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
 
 let ws = new WebSocket("ws://localhost:2134/wss");
 const io = new FlowLayer(ws);
+let pannel = new Pannel();
+pannel.val("open", false);
+console.log(pannel);
 
 io.on("open", (socket) => {
     console.log(socket.id);
@@ -19,7 +23,10 @@ io.on("open", (socket) => {
 
     // Example usage
     inputDialog
-        .promptUser("Enter device code:")
+        .promptUser("Login", [
+            { placeholder: "Enter device code", type: "text" },
+            { placeholder: "Enter device code", type: "text" },
+        ])
         .then((result) => {
             if (result) {
                 let id = parseInt(result);
@@ -44,7 +51,7 @@ io.on("open", (socket) => {
     document.querySelector("#newExplorer").addEventListener("click", () => {
         let folder = new Folder();
         console.log(folder);
-        let folderC = socket.createChannel();
+
         folder.on("load", (data) => {
             console.log(data);
             socket.fetch("read", data).then((a) => {

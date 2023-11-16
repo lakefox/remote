@@ -142,14 +142,13 @@ class DesktopWindow {
                 this.window.style.width = "600px";
                 this.window.style.height = "400px";
             } else {
-                this.window.style.top = "40px";
-                this.window.style.left = "90px";
+                this.window.style.top = "0px";
+                this.window.style.left = "0px";
 
                 let contStyles = getComputedStyle(this.container);
-                this.window.style.width =
-                    parseInt(contStyles.width) - 180 + "px";
+                this.window.style.width = parseInt(contStyles.width) + "px";
                 this.window.style.height =
-                    parseInt(contStyles.height) - 70 + "px";
+                    parseInt(contStyles.height) - 30 + "px";
             }
 
             this.#call("maximise", this.maxed, e);

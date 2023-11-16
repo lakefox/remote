@@ -159,7 +159,7 @@ let css = style`
     }
     .sidebar {
         width: 250px;
-        height: calc(100% - 25px);
+        height: calc(100% - 23px);
         background: #161616;
         padding: 10px;
         overflow: auto;
