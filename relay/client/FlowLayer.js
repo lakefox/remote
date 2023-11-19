@@ -97,6 +97,10 @@ function Socket(ws, id, connectId) {
         } else if (data.id == id && data.type == "fetch" && data.status === 0) {
             if (routes[data.data.type]) {
                 let val = routes[data.data.type](data.data.data);
+                if (typeof val?.then === "function") {
+                    let b = await val;
+                    val = b;
+                }
                 ws.send(
                     JSON.stringify({
                         type: "fetch",
@@ -115,7 +119,6 @@ function Socket(ws, id, connectId) {
                 if (routes["*"]) {
                     let val = routes["*"](data.data.type, data.data.data);
                     if (typeof val?.then === "function") {
-                        console.log("is pro,");
                         let b = await val;
                         console.log(b);
                         val = b;

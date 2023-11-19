@@ -2,6 +2,11 @@ import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
 import { FlowLayer } from "./client/FlowLayer.js";
 import { DB } from "https://deno.land/x/sqlite/mod.ts";
 import { sha256 } from "https://denopkg.com/chiefbiiko/sha256@v1.0.0/mod.ts";
+import {
+    create,
+    verify,
+    getNumericDate,
+} from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 
 const db = new DB("./relay.db");
 
@@ -11,10 +16,42 @@ db.execute(`
         password TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
+    );
+
+    CREATE TABLE IF NOT EXISTS packages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        author TEXT NOT NULL,
+        systems TEXT NOT NULL,
+        description TEXT NOT NULL,
+        variables TEXT,
+        install TEXT NOT NULL,
+        start TEXT NOT NULL,
+        status TEXT NOT NULL,
+        script TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 `);
 
+const querys = {
+    id: db.prepareQuery(`SELECT id FROM accounts WHERE email = (:email)`),
+    createAccount: db.prepareQuery(
+        `INSERT INTO accounts (id, password, email) VALUES (:id, :pwd_hash, :email)`
+    ),
+    login: db.prepareQuery(
+        `SELECT id FROM accounts WHERE email = :email AND password = :pwd_hash`
+    ),
+    createScript: db.prepareQuery(
+        `INSERT INTO packages (name, author, systems, description, variables, install, start, status, script) VALUES (:name, :id, :systems, :description, :variables, :install, :start, :status, :script)`
+    ),
+};
+
 const srcDir = "./client";
+const key = await crypto.subtle.generateKey(
+    { name: "HMAC", hash: "SHA-512" },
+    true,
+    ["sign", "verify"]
+);
 
 let connections = {};
 let mappedConnections = {};
@@ -44,25 +81,33 @@ router.get("/wss", (ctx) => {
         let subscribedTo;
         console.log("Opened: ", socket.id);
         connections[socket.id] = socket;
+        let loggedIn = false;
 
-        socket.route("create-account", ({ email, password }) => {
+        socket.route("create-account", async ({ email, password }) => {
             let pwd_hash = sha256(password, "utf8", "hex");
-            console.log(pwd_hash);
             // Generate a random alphanumeric string of length 10
-            let id = db.query(`SELECT id FROM accounts WHERE email = (?) `, [
-                email,
-            ]);
+            let id = querys.id.all({ email });
             console.log(id);
             if (id.length == 0) {
                 id = makeid(10);
-                db.execute(
-                    `INSERT INTO accounts (id, password, email) VALUES ('${id}', '${pwd_hash}', '${email}')`
+                querys.createAccount.execute({ id, pwd_hash, email });
+                loggedIn = true;
+                let token = await create(
+                    { alg: "HS512", type: "JWT" },
+                    {
+                        iss: JSON.stringify({ email, pwd_hash }),
+                        // 60 days
+                        exp: getNumericDate(60 * 60 * 24 * 60),
+                    },
+                    key
                 );
                 return {
                     error: false,
+                    token,
                     id: id[0][0],
                 };
             } else {
+                loggedIn = false;
                 return {
                     error: true,
                     id: null,
@@ -70,28 +115,77 @@ router.get("/wss", (ctx) => {
             }
         });
 
-        socket.route("login", ({ email, password }) => {
-            let pwd_hash = sha256(password, "utf8", "hex");
-            let id = db.query(
-                `SELECT id FROM accounts WHERE email = ('${email}') AND password = ('${pwd_hash}') `
-            );
-
+        socket.route("login", async (data) => {
+            let { email, password } = data;
+            let pwd_hash;
+            if (data.token && !email && !password) {
+                let jwt = await verify(data.token, key).catch(() => {});
+                if (jwt) {
+                    jwt = JSON.parse(jwt.iss);
+                    email = jwt.email;
+                    pwd_hash = jwt.pwd_hash;
+                } else {
+                    return {
+                        error: true,
+                        id: null,
+                    };
+                }
+            } else {
+                pwd_hash = sha256(password, "utf8", "hex");
+            }
+            let id = querys.login.all({ email, pwd_hash });
+            console.log("Logged in", id.length > 0);
+            let res = {
+                error: true,
+                id: null,
+            };
             if (id.length > 0) {
-                return {
+                loggedIn = true;
+                let token = await create(
+                    { alg: "HS512", type: "JWT" },
+                    {
+                        iss: JSON.stringify({ email, pwd_hash }),
+                        // 60 days
+                        exp: getNumericDate(60 * 60 * 24 * 60),
+                    },
+                    key
+                );
+                res = {
                     error: false,
+                    token,
                     id: id[0][0],
                 };
             } else {
-                return {
-                    error: true,
-                    id: null,
-                };
+                loggedIn = false;
             }
+            return res;
+        });
+
+        // name
+        // system
+        // description
+        // variables
+        // install
+        // start
+        // status
+        // script
+
+        socket.route("upload", (data) => {
+            return new Promise((resolve, reject) => {
+                querys.createScript
+                    .execute(data)
+                    .then(() => {
+                        resolve({ error: false });
+                    })
+                    .catch((e) => {
+                        resolve({ error: true, msg: e });
+                    });
+            });
         });
 
         socket.on("subscribe", (data) => {
             console.log("Subscribing", mappedConnections);
-            if (mappedConnections[data.org]) {
+            if (mappedConnections[data.org] && loggedIn) {
                 let id = mappedConnections[data.org][data.id];
                 console.log(id);
                 if (id) {
@@ -150,6 +244,7 @@ router.get("/wss", (ctx) => {
         });
 
         socket.on("close", () => {
+            loggedIn = false;
             delete connections[socket.id];
             console.log("Closed");
         });

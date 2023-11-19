@@ -152,6 +152,19 @@ function tempToDOM(type) {
                 el.setAttribute(prop, props[prop]);
             }
         }
+        el.on = (evt, handler) => {
+            el.addEventListener(evt, handler);
+            return el;
+        };
+        el.bind = (state, name) => {
+            el.addEventListener("input", () => {
+                state.val(name, el.value);
+            });
+            state.f((d) => {
+                el.value = d[name];
+            });
+            return el;
+        };
         return el;
     };
 }

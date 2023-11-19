@@ -12,39 +12,68 @@ let desktop = new Desktop(main);
 
 let ws = new WebSocket("ws://localhost:2134/wss");
 const io = new FlowLayer(ws);
+const inputDialog = new InputDialog();
 let pannel = new Pannel();
-pannel.val("open", false);
+pannel.val("open", true);
 console.log(pannel);
 
 io.on("open", (socket) => {
+    // socket.fetch("create-account", { email: "a", password: "a" });
     console.log(socket.id);
     let manager = new Term(socket);
-    const inputDialog = new InputDialog();
 
     // Example usage
-    inputDialog
-        .promptUser("Login", [
-            { placeholder: "Enter device code", type: "text" },
-            { placeholder: "Enter device code", type: "text" },
-        ])
-        .then((result) => {
-            if (result) {
-                let id = parseInt(result);
-                console.log(id);
-                // manager.connect(id);
-                socket.emit("subscribe", { org: "automated", id });
-
-                let t = new manager.Terminal();
-                desktop.new(t);
+    if (!localStorage.token) {
+        inputDialog
+            .promptUser("Login", [
+                { placeholder: "Email", type: "email" },
+                { placeholder: "Password", type: "password" },
+            ])
+            .then((creds) => {
+                socket
+                    .fetch("login", { email: creds[0], password: creds[1] })
+                    .then((res) => {
+                        console.log(res);
+                        if (!res.error) {
+                            localStorage.setItem("token", res.token);
+                            login();
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+            });
+    } else {
+        socket.fetch("login", { token: localStorage.token }).then((res) => {
+            if (!res.error) {
+                localStorage.setItem("token", res.token);
+                login();
+            } else {
+                localStorage.clear("token");
+                window.location.reload();
             }
-        })
-        .catch((error) => {
-            // alert(error);
         });
+    }
+
+    function login() {
+        inputDialog
+            .promptUser("", [
+                { placeholder: "Enter device code", type: "text" },
+            ])
+            .then((result) => {
+                if (result) {
+                    let id = parseInt(result);
+                    console.log(id);
+                    // manager.connect(id);
+                    socket.emit("subscribe", { org: "automated", id });
+
+                    let t = new manager.Terminal();
+                    desktop.new(t);
+                }
+            });
+    }
 
     document.querySelector("#newTerm").addEventListener("click", () => {
         let t = new manager.Terminal();
-        console.log(t);
         desktop.new(t);
     });
 

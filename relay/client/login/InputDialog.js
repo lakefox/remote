@@ -163,4 +163,3 @@ a .inputbuttons {
     flex-direction: column;
 }
 `;
-console.log(css);
