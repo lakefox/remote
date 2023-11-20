@@ -42,7 +42,7 @@ const querys = {
         `SELECT id FROM accounts WHERE email = :email AND password = :pwd_hash`
     ),
     createScript: db.prepareQuery(
-        `INSERT INTO packages (name, author, systems, description, variables, install, start, status, script) VALUES (:name, :id, :systems, :description, :variables, :install, :start, :status, :script)`
+        `INSERT INTO packages (name, author, systems, description, variables, install, start, status, script) VALUES (:name, :author, :systems, :description, :variables, :install, :start, :status, :script)`
     ),
 };
 
@@ -171,16 +171,18 @@ router.get("/wss", (ctx) => {
         // script
 
         socket.route("upload", (data) => {
+            console.log(data);
             return new Promise((resolve, reject) => {
-                querys.createScript
-                    .execute(data)
-                    .then(() => {
-                        resolve({ error: false });
-                    })
-                    .catch((e) => {
-                        resolve({ error: true, msg: e });
-                    });
+                querys.createScript.execute(data);
+                resolve({ error: false });
             });
+        });
+
+        socket.route("getPackages", (amt = 5) => {
+            const result = db.query(
+                `SELECT * FROM packages ORDER BY created_at DESC LIMIT ${amt}`
+            );
+            return result;
         });
 
         socket.on("subscribe", (data) => {

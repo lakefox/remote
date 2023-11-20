@@ -9,6 +9,8 @@ export class Editor {
         let cont = div`class="${css.editor}"`;
         let teCont = div`class="${css.teCont}"`;
         let sidebar = div`class="${css.sidebar}"`;
+        this.currentFile = "";
+        this.save = () => {};
         this.read = () => {
             return "";
         };
@@ -19,6 +21,11 @@ export class Editor {
         f(({ files, sidebar }) => {
             console.log(files);
             generateFileSelector(sidebar, files, self.read);
+        });
+
+        this.te.onSave((e) => {
+            console.log(self.currentFile, e);
+            self.save(self.currentFile, e);
         });
 
         cont.appendChild(sidebar);
@@ -33,8 +40,13 @@ export class Editor {
     }
     reader(cb) {
         this.read = async (file) => {
+            console.log(file);
+            this.currentFile = file;
             this.te.load(file.split(".").at(-1), await cb(file));
         };
+    }
+    onSave(cb) {
+        this.save = cb;
     }
 }
 

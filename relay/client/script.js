@@ -14,8 +14,8 @@ let ws = new WebSocket("ws://localhost:2134/wss");
 const io = new FlowLayer(ws);
 const inputDialog = new InputDialog();
 let pannel = new Pannel();
-pannel.val("open", true);
 console.log(pannel);
+let clientID;
 
 io.on("open", (socket) => {
     // socket.fetch("create-account", { email: "a", password: "a" });
@@ -35,6 +35,7 @@ io.on("open", (socket) => {
                     .then((res) => {
                         console.log(res);
                         if (!res.error) {
+                            clientID = res.id;
                             localStorage.setItem("token", res.token);
                             login();
                         } else {
@@ -45,6 +46,7 @@ io.on("open", (socket) => {
     } else {
         socket.fetch("login", { token: localStorage.token }).then((res) => {
             if (!res.error) {
+                clientID = res.id;
                 localStorage.setItem("token", res.token);
                 login();
             } else {
@@ -55,6 +57,10 @@ io.on("open", (socket) => {
     }
 
     function login() {
+        socket.fetch("getPackages", 20).then((a) => {
+            console.log(a);
+            pannel.val("pkgs", a);
+        });
         inputDialog
             .promptUser("", [
                 { placeholder: "Enter device code", type: "text" },
@@ -75,6 +81,10 @@ io.on("open", (socket) => {
     document.querySelector("#newTerm").addEventListener("click", () => {
         let t = new manager.Terminal();
         desktop.new(t);
+    });
+
+    document.querySelector("#newPannel").addEventListener("click", () => {
+        pannel.val("open", !pannel.val("open"));
     });
 
     document.querySelector("#newExplorer").addEventListener("click", () => {
@@ -99,8 +109,18 @@ io.on("open", (socket) => {
         desktop.new(folder.val("cont"));
     });
 
+    pannel.on("save", (pkg) => {
+        pkg.author = clientID;
+        socket.fetch("upload", pkg).then(() => {
+            pannel.val("showNew", false);
+        });
+    });
+
     document.querySelector("#newCode").addEventListener("click", () => {
         let editor = new Editor(desktop);
+        editor.onSave((name, data) => {
+            socket.fetch("write", { name, data });
+        });
         editor.reader((file) => {
             return new Promise((resolve, reject) => {
                 socket.fetch("read", file).then(({ data }) => {

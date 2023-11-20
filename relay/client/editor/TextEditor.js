@@ -4,6 +4,7 @@ import { extMap } from "./fileTools.js";
 export class TextEditor {
     constructor() {
         this.html = div`class="${css.editor}"`;
+        this.save = () => {};
     }
     init() {
         let self = this;
@@ -26,6 +27,15 @@ export class TextEditor {
 
             // Observe changes to the terminal container's size
             resizeObserver.observe(self.html);
+
+            self.editor.onKeyDown((e) => {
+                console.log(e);
+                if (e.keyCode === 49 && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    console.log("saving");
+                    self.save(self.editor.getValue());
+                }
+            });
         });
     }
     load(lang, code) {
@@ -37,6 +47,9 @@ export class TextEditor {
             this.editor.getModel(),
             extMap[lang] || "text"
         );
+    }
+    onSave(cb) {
+        this.save = cb;
     }
 }
 

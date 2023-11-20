@@ -157,13 +157,24 @@ function tempToDOM(type) {
             return el;
         };
         el.bind = (state, name) => {
-            el.addEventListener("input", () => {
-                state.val(name, el.value);
-            });
-            state.f((d) => {
-                el.value = d[name];
-            });
+            if (typeof el.value != "undefined") {
+                el.addEventListener("input", () => {
+                    state.val(name, el.value);
+                });
+                state.f((d) => {
+                    el.value = d[name];
+                });
+            } else {
+                state.f((d) => {
+                    el.innerHTML = d[name];
+                });
+            }
+
             return el;
+        };
+        el.add = el.appendChild;
+        el.clear = () => {
+            el.innerHTML = "";
         };
         return el;
     };

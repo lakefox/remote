@@ -70,9 +70,9 @@ func main() {
 		})
 
 		socket.Route("write", func(a any) any {
-			raw := a.(map[string]interface{})
-			data := raw["data"].(map[string]interface{})
-			err := os.WriteFile(data["name"].(string), data["data"].([]byte), 0777)
+			data := a.(map[string]interface{})
+			fmt.Println(data)
+			err := os.WriteFile(data["name"].(string), []byte(data["data"].(string)), 0777)
 			// handle this error
 			if err != nil {
 				// print it out
