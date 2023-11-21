@@ -22,6 +22,7 @@ export class Pannel extends Global {
         super();
         let self = this;
         let cont = div`class="${css.pannel}"`;
+        this.env = () => {};
         val("cont", cont);
         val("open", false);
         val("showNew", false);
@@ -35,18 +36,12 @@ export class Pannel extends Global {
         val("start", "");
         val("status", "");
         val("script", "");
-        val("varAmt", 3);
+        val("varAmt", 1);
+        val("allVars", []);
         val("varVals", []);
         val("pkgs", []);
         val("filterOs", "Linux");
         val("selectedPkg", 0);
-
-        let newButton = button`class="${css.new}" textContent="NEW"`.on(
-            "click",
-            () => {
-                val("showNew", !val("showNew"));
-            }
-        );
 
         let main = Fmt`${div``}
                             ${div`innerText="X" style="width: 100%;padding-right:10px;text-align:right;cursor:pointer;"`.on(
@@ -63,7 +58,7 @@ export class Pannel extends Global {
                                     "search"
                                 )}
                                 ${div`class="${css.spread}"`}
-                                    ${newButton}
+                                    ${div``}
                                     ${select`class="${css.input}"`.bind(
                                         st,
                                         "filterOs"
@@ -95,28 +90,28 @@ export class Pannel extends Global {
                                     st,
                                     "description"
                                 )}
-                                ${h2`innerText="Variables"`}
+                                ${h2`innerText=".ENV Variables"`}
                                 ${genVarIO()}
                                 ${div`class="${css.add}"`}
                                     ${button`innerText="+"`.on("click", () => {
                                         val("varAmt", val("varAmt") + 1);
                                     })}
-                                ${h2`innerText="Install"`}
-                                ${textarea`class="${css.input}"`.bind(
+                                ${h2`innerText="Install Command"`}
+                                ${input`type="text" class="${css.input}"`.bind(
                                     st,
                                     "install"
                                 )}
-                                ${h2`innerText="Start"`}
-                                ${textarea`class="${css.input}"`.bind(
+                                ${h2`innerText="Start Command"`}
+                                ${input`type="text" class="${css.input}"`.bind(
                                     st,
                                     "start"
                                 )}
-                                ${h2`innerText="Status"`}
-                                ${textarea`class="${css.input}"`.bind(
+                                ${h2`innerText="Status Command"`}
+                                ${input`type="text" class="${css.input}"`.bind(
                                     st,
                                     "status"
                                 )}
-                                ${h2`innerText="Script"`}
+                                ${h2`innerText="Taskfile"`}
                                 ${textarea`class="${css.input}"`.bind(
                                     st,
                                     "script"
@@ -156,17 +151,32 @@ export class Pannel extends Global {
                                     ${code``.bind(st, "script")}
                                 `;
 
-        f(({ showNew }) => {
+        f(async ({ showNew }) => {
             cont.clear();
             val("name", "");
             val("os", "Linux");
             val("description", "");
-            val("install", "");
-            val("start", "");
-            val("status", "");
-            val("script", "");
-            val("varAmt", 3);
-            val("varVals", []);
+            val("install", "install");
+            val("start", "start");
+            val("status", "status");
+            val(
+                "script",
+                `version: '3'
+
+tasks:
+  install:
+     cmds:
+       - echo 'Installing'
+  start:
+     cmds:
+       - echo 'Starting $NAME'
+  status:
+     cmds:
+       - echo '2'`
+            );
+            val("varAmt", 1);
+            val("varVals", [{ name: "NAME", value: "App Name" }]);
+            val("allVars", await this.env());
             if (showNew) {
                 cont.appendChild(newCont);
             } else {
@@ -206,11 +216,14 @@ export class Pannel extends Global {
         });
         document.querySelector("#pannel").appendChild(cont);
     }
+    getEnv(cb) {
+        this.env = cb;
+    }
 }
 
 function genVarIO() {
     let c = div``;
-    f(({ varAmt }) => {
+    f(({ varAmt, allVars }) => {
         c.clear();
         let { varVals } = val();
         for (let i = 0; i < Math.max(varAmt, varVals.length); i++) {
@@ -247,9 +260,33 @@ function genVarIO() {
                                 v[i].value = e.target.value;
                                 val("varVals", v);
                             }
+                        )}
+                        ${span`innerText="X" class="${css.delete}"`.on(
+                            "click",
+                            () => {
+                                let vv = val("varVals");
+                                let av = val("allVars");
+                                av.push(vv.splice(i, 1)[0]);
+                                val({ varVals: vv, allVars: av });
+                            }
                         )}`;
             c.add(e);
         }
+        let avc = div`class="${css.allVars}"`;
+        for (let i = 0; i < allVars.length; i++) {
+            const av = allVars[i];
+            avc.add(
+                div`innerText="${av.name}"`.on("click", () => {
+                    let vv = val("varVals");
+                    vv.push(av);
+                    val("varVals", vv);
+                    let aa = val("allVars");
+                    aa.splice(i, 1);
+                    val("allVars", aa);
+                })
+            );
+        }
+        c.add(avc);
     });
     return c;
 }
@@ -291,10 +328,16 @@ function renderPkgs() {
                                 .slice(0, 300)
                                 .replace(/[^A-Za-z0-9\s]/g, "")}" class="${
                                 css.desc
-                            }"`}
-                            `);
+                            }"`}`);
             }
         }
+        c.add(
+            Fmt`${div`class="${css.new} ${css.pkg}"`.on("click", () => {
+                val("showNew", !val("showNew"));
+            })}
+                ${div`innerText="+" class="${css.title}"`}
+                `
+        );
     });
     return c;
 }
@@ -325,18 +368,6 @@ let css = style`
         width: 80%;
         margin-top: 10px;
         display: flex;
-    }
-
-    .new {
-        background: #13111c;
-        border: none;
-        border-radius: 3px;
-        padding: 5px 10px;
-        color: #eee;
-        font-weight: 500;
-        width: 100px;
-        height: 29px;
-        cursor: pointer;
     }
     .inputGroup {
         color: aliceblue;
@@ -453,5 +484,35 @@ let css = style`
         font-weight: 400;
         height: 65px;
         overflow-y: clip;
+    }
+    .new {
+        text-align: center;
+        line-height: 108px;
+        font-size: 37px;
+        background: #736d84b5;
+    }
+    .allVars {
+        display: flex;
+        margin-top: 30px;
+        height: 70px;
+        background: #1f1e2f;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    .allVars > div {
+        width: min-content;
+        margin-right: 10px;
+        padding: 4px 6px;
+        background: #33323e;
+        border-radius: 4px;
+        cursor: pointer;
+        height: fit-content;
+    }
+    .delete {
+        color: red;
+        font-size: 15px !important;
+        font-weight: 600;
+        line-height: 28px;
+        cursor: pointer;
     }
 `;

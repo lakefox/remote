@@ -116,6 +116,10 @@ io.on("open", (socket) => {
         });
     });
 
+    pannel.getEnv(async () => {
+        return await socket.fetch("getENV");
+    });
+
     document.querySelector("#newCode").addEventListener("click", () => {
         let editor = new Editor(desktop);
         editor.onSave((name, data) => {

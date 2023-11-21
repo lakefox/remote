@@ -185,6 +185,15 @@ router.get("/wss", (ctx) => {
             return result;
         });
 
+        socket.route("getENV", () => {
+            const result = db.query(`SELECT variables FROM packages`);
+            let all = [];
+            result.forEach((env) => {
+                all = all.concat(JSON.parse(env));
+            });
+            return all;
+        });
+
         socket.on("subscribe", (data) => {
             console.log("Subscribing", mappedConnections);
             if (mappedConnections[data.org] && loggedIn) {

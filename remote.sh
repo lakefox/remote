@@ -1,1 +1,0 @@
-/usr/bin/node remote/node/main.js --org=automated
