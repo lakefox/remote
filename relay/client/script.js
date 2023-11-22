@@ -10,7 +10,8 @@ import { Pannel } from "./editor/Pannel.js";
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
 
-let ws = new WebSocket("ws://localhost:2134/wss");
+let ws = new WebSocket("wss://ws.lakefox.net/wss");
+// let ws = new WebSocket("ws://localhost:2134/wss");
 const io = new FlowLayer(ws);
 const inputDialog = new InputDialog();
 let pannel = new Pannel();
@@ -133,7 +134,7 @@ io.on("open", (socket) => {
             });
         });
         socket
-            .fetch("dir", "/Users/masonwright/Desktop/term/relay")
+            .fetch("dir", "/Users/masonwright/Desktop/current")
             .then((data) => {
                 editor.load(data);
             });
