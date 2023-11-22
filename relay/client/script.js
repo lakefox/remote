@@ -19,14 +19,13 @@ console.log(pannel);
 let clientID;
 
 io.on("open", (socket) => {
-    // socket.fetch("create-account", { email: "a", password: "a" });
     console.log(socket.id);
     let manager = new Term(socket);
 
     // Example usage
     if (!localStorage.token) {
         inputDialog
-            .promptUser("Login", [
+            .promptUser("Login/Create Account", [
                 { placeholder: "Email", type: "email" },
                 { placeholder: "Password", type: "password" },
             ])
@@ -40,7 +39,23 @@ io.on("open", (socket) => {
                             localStorage.setItem("token", res.token);
                             login();
                         } else {
-                            window.location.reload();
+                            socket
+                                .fetch("create-account", {
+                                    email: creds[0],
+                                    password: creds[1],
+                                })
+                                .then((res) => {
+                                    if (!res.error) {
+                                        clientID = res.id;
+                                        localStorage.setItem(
+                                            "token",
+                                            res.token
+                                        );
+                                        login();
+                                    } else {
+                                        window.location.reload();
+                                    }
+                                });
                         }
                     });
             });
