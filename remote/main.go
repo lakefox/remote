@@ -184,12 +184,11 @@ func main() {
 			})
 
 		})
-
 	}()
+
 	// Keep Alive
 	log.Println("Remote session started. Press Ctrl+C to exit.")
 	<-interrupt
-
 }
 
 func listFilesInDirectory(dirPath string) []string {
