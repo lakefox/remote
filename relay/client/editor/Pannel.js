@@ -318,7 +318,6 @@ function getENV() {
                         )}`;
             c.add(e);
         }
-        console.log(c);
     });
     return c;
 }

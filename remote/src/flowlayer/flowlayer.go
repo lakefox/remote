@@ -37,6 +37,7 @@ type Socket struct {
 	Callbacks map[string]func(any)
 	Channels  map[float64]Channel
 	Routes    map[string]func(any) any
+	Requests  []func(any)
 }
 
 // <----------------------------------------------------------------------------------------------> //
@@ -75,6 +76,7 @@ func auth(conn *websocket.Conn) *Socket {
 		Callbacks: callbacks,
 		Channels:  channels,
 		Routes:    routes,
+		Requests:  []func(any){},
 	}
 
 	go func() {
@@ -199,6 +201,10 @@ func handleMessage(user *Socket, data map[string]interface{}) *Event {
 					fmt.Println("JSON marshaling error:", err)
 				}
 				user.Write <- string(jsonData)
+			} else if data["status"].(float64) == 1 {
+				fmt.Println(data["index"].(float64))
+				d := data["data"].(map[string]interface{})
+				user.Requests[int(data["index"].(float64))](d["data"])
 			}
 
 		} else if data["type"] == "open" {
@@ -299,6 +305,30 @@ func (e *Socket) CreateChannel() {
 		ID:      e.ToID,
 		Channel: math.Round(rand.Float64() * 10000000),
 	}
+
+	jsonData, err := json.Marshal(msg)
+	if err != nil {
+		fmt.Println("JSON marshaling error:", err)
+		return
+	}
+	e.Write <- string(jsonData)
+}
+
+func (e *Socket) Fetch(event string, data any, callback func(any)) {
+	d := DATA{
+		Type: event,
+		Data: data,
+	}
+
+	msg := FETCH{
+		Type:   "fetch",
+		ID:     e.ToID,
+		Status: 0,
+		Index:  float64(len(e.Requests)),
+		Data:   d,
+	}
+
+	e.Requests = append(e.Requests, callback)
 
 	jsonData, err := json.Marshal(msg)
 	if err != nil {

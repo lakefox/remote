@@ -180,8 +180,18 @@ router.get("/wss", (ctx) => {
 
         socket.route("getPackages", (amt = 5) => {
             const result = db.query(
-                `SELECT * FROM packages ORDER BY created_at DESC LIMIT ${amt}`
+                `SELECT * FROM packages ORDER BY created_at DESC LIMIT :amt`,
+                { amt }
             );
+            return result;
+        });
+
+        socket.route("getPackage", (id) => {
+            console.log(id);
+            const result = db.query(`SELECT * FROM packages WHERE id = :id`, {
+                id,
+            });
+            console.log(result);
             return result;
         });
 
@@ -193,8 +203,6 @@ router.get("/wss", (ctx) => {
             });
             return all;
         });
-
-        socket.route("getPackage", () => {});
 
         socket.on("subscribe", (data) => {
             console.log("Subscribing", mappedConnections);

@@ -71,7 +71,7 @@ io.on("open", (socket) => {
                     console.log(id);
                     // manager.connect(id);
                     socket.emit("subscribe", { org: "automated", id });
-
+                    socket.fetch("addAction", 5).then(console.log);
                     let t = new manager.Terminal();
                     desktop.new(t);
                 }

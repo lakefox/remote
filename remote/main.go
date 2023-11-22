@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -27,6 +28,11 @@ type File struct {
 type File2 struct {
 	Data string `json:"data"`
 	Path string `json:"path"`
+}
+
+type EnvVar struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 func main() {
@@ -82,7 +88,18 @@ func main() {
 		})
 
 		socket.Route("addAction", func(a any) any {
-			println(a)
+			socket.Fetch("getPackage", a, func(b any) {
+				data := b.([]interface{})
+				rows := data[0].([]interface{})
+				dirName := rows[1].(string) + "-" + rows[2].(string) + fmt.Sprint(rows[0].(float64))
+				folder := filepath.Join(mount, "Actions", dirName)
+				fmt.Println(dirName, folder)
+				check(createDirectoryIfNotExists(filepath.Join(mount, "Actions")))
+				check(createOrReplaceDirectory(folder))
+				jsonToEnvFile(rows[5].(string), folder)
+
+				check(os.WriteFile(filepath.Join(folder, "Actions.yml"), []byte(rows[9].(string)), 0644))
+			})
 			return nil
 		})
 
@@ -191,6 +208,74 @@ func listFilesInDirectory(dirPath string) []string {
 	}
 
 	return files
+}
+
+func createOrReplaceDirectory(dirPath string) error {
+	// Remove the existing directory
+	err := os.RemoveAll(dirPath)
+	if err != nil {
+		return err
+	}
+
+	// Create the new directory
+	err = os.Mkdir(dirPath, 0755)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func jsonToEnvFile(jsonString, folderPath string) error {
+	// Unmarshal JSON into a slice of EnvVar
+	var envVars []EnvVar
+	err := json.Unmarshal([]byte(jsonString), &envVars)
+	if err != nil {
+		return fmt.Errorf("error decoding JSON: %v", err)
+	}
+
+	// Create the full path for the .env file
+	envFilePath := filepath.Join(folderPath, ".env")
+
+	// Open or create the .env file for writing
+	file, err := os.OpenFile(envFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return fmt.Errorf("error opening .env file: %v", err)
+	}
+	defer file.Close()
+
+	// Write the name-value pairs to the .env file
+	for _, envVar := range envVars {
+		line := fmt.Sprintf("%s=%s\n", envVar.Name, envVar.Value)
+		_, err := file.WriteString(line)
+		if err != nil {
+			return fmt.Errorf("error writing to .env file: %v", err)
+		}
+	}
+
+	fmt.Printf(".env file created successfully at: %s\n", envFilePath)
+	return nil
+}
+
+func createDirectoryIfNotExists(dirPath string) error {
+	// Check if the directory already exists
+	_, err := os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		// Directory does not exist, create it
+		err := os.Mkdir(dirPath, 0755) // 0755 is the permission mode for the directory
+		if err != nil {
+			return fmt.Errorf("error creating directory: %v", err)
+		}
+		fmt.Printf("Directory created: %s\n", dirPath)
+	} else if err != nil {
+		// Some other error occurred
+		return fmt.Errorf("error checking directory existence: %v", err)
+	} else {
+		// Directory already exists
+		fmt.Printf("Directory already exists: %s\n", dirPath)
+	}
+
+	return nil
 }
 
 func check(e error) {
