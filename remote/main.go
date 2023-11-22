@@ -81,6 +81,11 @@ func main() {
 			return nil
 		})
 
+		socket.Route("addAction", func(a any) any {
+			println(a)
+			return nil
+		})
+
 		socket.On("open", func(a any) {
 
 			ident := Ident{

@@ -238,7 +238,7 @@ func Action(dir string) ActionRunner {
 	}
 }
 
-func (a ActionRunner) Run(name string) {
+func (a ActionRunner) Run(name string) chan string {
 	script := a.Yaml.Jobs[name].Script
 
 	a.File.Log("Action: " + name)
@@ -263,6 +263,7 @@ func (a ActionRunner) Run(name string) {
 		a.Runner.In <- a.Env.Replace(v)
 	}
 	close(a.Runner.In)
+	return a.Runner.Out
 }
 
 func check(e error) {
@@ -273,4 +274,9 @@ func check(e error) {
 }
 
 // a := actions.Action("../Test")
-// a.Run("install")
+// ch := a.Run("install")
+// go func() {
+// 	for o := range ch {
+// 		println(o)
+// 	}
+// }()

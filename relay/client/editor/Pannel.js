@@ -12,6 +12,8 @@ import {
     span,
     code,
     pre,
+    details,
+    summary,
 } from "../html.js";
 
 let st = new State();
@@ -39,12 +41,13 @@ export class Pannel extends Global {
         val("varAmt", 1);
         val("allVars", []);
         val("varVals", []);
+        val("env", []);
         val("pkgs", []);
         val("filterOs", "Linux");
         val("selectedPkg", 0);
 
         let main = Fmt`${div``}
-                            ${div`innerText="X" style="width: 100%;padding-right:10px;text-align:right;cursor:pointer;"`.on(
+                            ${div`innerText="X" style="width: 100%;text-align: right;cursor: pointer;position: absolute;right: 20px;top: 20px;color: #fff;font-family: sans-serif;"`.on(
                                 "click",
                                 () => {
                                     val("open", false);
@@ -53,7 +56,7 @@ export class Pannel extends Global {
                                 }
                             )}
                             ${div`class="${css.searchBar}"`}  
-                                ${input`type="search" name="search" placeholder="Find a package"`.bind(
+                                ${input`type="search" name="search" placeholder="Search Actions"`.bind(
                                     st,
                                     "search"
                                 )}
@@ -111,7 +114,7 @@ export class Pannel extends Global {
                                     st,
                                     "status"
                                 )}
-                                ${h2`innerText="Taskfile"`}
+                                ${h2`innerText="Action File"`}
                                 ${textarea`class="${css.input}"`.bind(
                                     st,
                                     "script"
@@ -136,19 +139,19 @@ export class Pannel extends Global {
                                     ${div`class="${css.os}"`.bind(st, "author")}
                                     ${div`class="${css.os}"`.bind(st, "os")}
                                 ${div``.bind(st, "description")}
-                                ${h2`innerText="Install Script"`}
-                                ${pre`class="${css.preCode}"`}
-                                    ${code``.bind(st, "install")}
-                                ${h2`innerText="Status Command"`}
-                                ${pre`class="${css.preCode}"`}
-                                    ${code``.bind(st, "status")}
                                 ${h2`innerText="ENV Variables"`}
-                                ${h2`innerText="Start Script"`}
-                                ${pre`class="${css.preCode}"`}
-                                    ${code``.bind(st, "start")}
-                                ${h2`innerText="Source"`}
-                                ${pre`class="${css.preCode}"`}
-                                    ${code``.bind(st, "script")}
+                                ${getENV()}
+                                ${details`class="${css.details}"`}
+                                    ${summary`innerText="Source"`}
+                                    ${pre`class="${css.preCode}"`}
+                                        ${code``.bind(st, "script")}
+                                ${div`class="${css.submit} ${css.bttm}" `}
+                                    ${button`innerText="Add"`.on(
+                                        "click",
+                                        () => {
+                                            addPackage(self);
+                                        }
+                                    )}
                                 `;
 
         f(async ({ showNew }) => {
@@ -291,6 +294,35 @@ function genVarIO() {
     return c;
 }
 
+function getENV() {
+    let c = div``;
+    f(({ varVals }) => {
+        c.clear();
+        for (let i = 0; i < varVals.length; i++) {
+            let v1V = "";
+            if (varVals[i]) {
+                if (varVals[i].value != "") {
+                    v1V = `value="${varVals[i].value || ""}"`;
+                }
+            }
+            let e = Fmt`${div`class="${css.varIO}"`}
+                        ${div`class="${css.input}" innerText="${varVals[i].name}"`}
+                        ${span`innerText="="`}
+                        ${input`class="${css.input}" type="text" placeholder="Default Value" ${v1V}`.on(
+                            "input",
+                            (e) => {
+                                let v = val("varVals");
+                                v[i].value = e.target.value;
+                                val("env", v);
+                            }
+                        )}`;
+            c.add(e);
+        }
+        console.log(c);
+    });
+    return c;
+}
+
 function savePackage(self) {
     let pkg = {
         name: val("name"),
@@ -383,6 +415,9 @@ let css = style`
         border-radius: 3px;
         color: #fff;
         font-size: 15px;
+        width: 50%;
+        line-height: 25px;
+        padding-left: 9px;
     }
     textarea.input {
         width: 100%;
@@ -402,16 +437,18 @@ let css = style`
     }
     .submit > button {
         width: 100px;
-        height: 31px;
+        height: 40px;
         background: #d7d7d7;
         border: none;
         border-radius: 3px;
         font-weight: 600;
         cursor: pointer;
+        font-size: 16px;
+        color: #333234;
     }
     .varIO {
         display: flex;
-        margin-bottom: 7px;
+        margin-bottom: 70px;
     }
     .varIO > * {
         height: 25px;
@@ -514,5 +551,15 @@ let css = style`
         font-weight: 600;
         line-height: 28px;
         cursor: pointer;
+    }
+    .details {
+        padding: 10px;
+        border: 2px solid #33323e;
+        border-radius: 13px;
+    }
+    .bttm {
+        position: absolute;
+        bottom: -45px;
+        right: 45px;
     }
 `;

@@ -194,6 +194,8 @@ router.get("/wss", (ctx) => {
             return all;
         });
 
+        socket.route("getPackage", () => {});
+
         socket.on("subscribe", (data) => {
             console.log("Subscribing", mappedConnections);
             if (mappedConnections[data.org] && loggedIn) {
