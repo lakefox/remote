@@ -53,15 +53,16 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	go func() {
-		socket := flowlayer.Connect("wss://ws.lakefox.net/wss")
-		// socket := flowlayer.Connect("ws://localhost:2134/wss")
+		// socket := flowlayer.Connect("wss://ws.lakefox.net/wss")
+		socket := flowlayer.Connect("ws://localhost:2134/wss")
 
 		socket.Route("files", func(a any) any {
 			return listFilesInDirectory(mount)
 		})
 
 		socket.Route("dir", func(a any) any {
-			return listFilesInDirectory(a.(string))
+			return listFilesInDirectory(mount)
+			// return listFilesInDirectory(a.(string))
 		})
 
 		socket.Route("read", func(data any) any {
