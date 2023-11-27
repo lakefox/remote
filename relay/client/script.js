@@ -10,7 +10,11 @@ import { Pannel } from "./editor/Pannel.js";
 let main = document.querySelector("#main");
 let desktop = new Desktop(main);
 
-let ws = new WebSocket("wss://ws.lakefox.net/wss");
+let ws = new WebSocket(
+    `${window.location.protocol == "https:" ? "wss" : "ws"}://${
+        window.location.host
+    }/wss`
+);
 // let ws = new WebSocket("ws://localhost:2134/wss");
 const io = new FlowLayer(ws);
 const inputDialog = new InputDialog();

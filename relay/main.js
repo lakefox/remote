@@ -44,6 +44,9 @@ const querys = {
     createScript: db.prepareQuery(
         `INSERT INTO packages (name, author, systems, description, variables, install, start, status, script) VALUES (:name, :author, :systems, :description, :variables, :install, :start, :status, :script)`
     ),
+    upadateScript: db.prepareQuery(
+        `UPDATE packages SET name = :name, author = :author, systems = :systems, description = :description, variables = :variables, install = :install, start = :start, status = :status, script = :script WHERE id = :id`
+    ),
 };
 
 const srcDir = "./client";
@@ -193,6 +196,14 @@ router.get("/wss", (ctx) => {
             });
             console.log(result);
             return result;
+        });
+
+        socket.route("updatePackage", (data) => {
+            console.log(data);
+            return new Promise((resolve, reject) => {
+                querys.upadateScript.execute(data);
+                resolve({ error: false });
+            });
         });
 
         socket.route("getENV", () => {
